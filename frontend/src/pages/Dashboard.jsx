@@ -8,12 +8,12 @@ const Dashboard = () => {
      
       
       {/* ================= HERO ================= */}
-      <section className="bg-gray-100 py-16">
+      <section className="bg-black py-16">
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 items-center gap-12">
           
           {/* Text */}
           <div className="space-y-5">
-            <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-800">
+            <h1 className="text-4xl lg:text-5xl font-extrabold text-white">
               Prepare Smarter.{" "}
               <span className="text-sky-700">Interview Better.</span>
             </h1>
@@ -23,7 +23,7 @@ const Dashboard = () => {
             </p>
 
             <Link
-              to="/upload"
+              to="/login"
               className="inline-block bg-sky-600 text-white px-7 py-3 rounded-full font-semibold hover:bg-sky-700 transition"
             >
               Start Interview

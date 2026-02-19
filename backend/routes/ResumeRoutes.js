@@ -30,6 +30,13 @@ import multer from "multer";
 import { extractTextFromPDF } from "../utils/pdfparser.js";
 
 const router = express.Router();
+function normalizeName(name) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 
 const storage = multer.memoryStorage();
@@ -60,6 +67,24 @@ router.post("/upload",authMiddleware,upload.single("resume"),async (req, res) =>
       const text = await extractTextFromPDF(req.file.buffer);
       const parsedData = parseResumeText(text);
 
+        
+      // ---------------- NAME VALIDATION ----------------
+      const resumeName = normalizeName(parsedData.name);
+      //const userName = normalizeName(req.user.name); 
+      // If you have firstName + lastName:
+       const userName = normalizeName(`${req.user.firstName} ${req.user.lastName}`);
+
+      if (!resumeName || !userName) {
+        return res.status(400).json({
+          message: "Unable to verify resume name"
+        });
+      }
+
+      if (!resumeName.includes(userName)) {
+        return res.status(400).json({
+          message: "Resume name does not match logged-in user"
+        });
+      }
 
       parsedData.user = req.user._id;
 
@@ -68,18 +93,44 @@ router.post("/upload",authMiddleware,upload.single("resume"),async (req, res) =>
         user: req.user._id
       });
 
+      // if (existingResume) {
+      //   return res.status(400).json({
+      //     message: "Resume already uploaded for this user"
+      //   });
+      // }
+      // Check if resume exists
+      
+      let savedResume;
+
       if (existingResume) {
-        return res.status(400).json({
-          message: "Resume already uploaded for this user"
+        // UPDATE existing
+        savedResume = await ParsedResume.findOneAndUpdate(
+          { user: req.user._id },
+          parsedData,
+          { new: true }
+        );
+
+        return res.json({
+          message: "Resume updated successfully",
+          data: savedResume
+        });
+
+      } else {
+        // CREATE new
+        savedResume = await ParsedResume.create(parsedData);
+
+        return res.json({
+          message: "Resume uploaded successfully",
+          data: savedResume
         });
       }
 
-      const savedResume = await ParsedResume.create(parsedData);
+      // const savedResume = await ParsedResume.create(parsedData);
 
-      res.json({
-        message: "Resume uploaded successfully",
-        data: savedResume
-      });
+      // res.json({
+      //   message: "Resume uploaded successfully",
+      //   data: savedResume
+      // });
 
     } catch (error) {
       console.error(error);
@@ -88,5 +139,20 @@ router.post("/upload",authMiddleware,upload.single("resume"),async (req, res) =>
   }
 );
 
+router.get("/getResume", authMiddleware, async (req, res) => {
+  try {
+    const resume = await ParsedResume.findOne({
+      user: req.user._id
+    });
+
+    res.json({
+      exists: !!resume,
+      resume: resume || null
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 export default router;

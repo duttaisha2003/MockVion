@@ -63,8 +63,8 @@ function Register() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-8">
-        <div className="flex flex-col md:flex-row w-full max-w-4xl bg-white rounded-xl shadow-lg overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center bg-black px-4 py-8">
+        <div className="flex flex-col md:flex-row w-full max-w-5xl bg-white rounded-xl shadow-lg overflow-hidden">
           {/* Left panel - Form */}
           <div className="w-full md:w-1/2 p-8">
             <h2 className="text-3xl font-semibold text-sky-800 mb-6 text-center md:text-left">
@@ -73,39 +73,45 @@ function Register() {
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-sm">
               {/* First Name */}
-              <div className="space-y-2">
-                <label className="block text-sky-700 font-medium">FIRST NAME</label>
-                <input
-                  {...register('fname')}
-                  placeholder="Enter your First name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-                {errors.fname && (
-                  <p className="mt-1 text-sm text-red-600">{errors.fname.message}</p>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  
+                {/* First Name */}
+                <div className="space-y-2">
+                  <label className="block text-sky-700 font-medium">FIRST NAME</label>
+                  <input
+                    {...register('fname')}
+                    placeholder="Enter your First name"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  />
+                  {errors.fname && (
+                    <p className="mt-1 text-sm text-red-600">{errors.fname.message}</p>
+                  )}
+                </div>
+
+                {/* Last Name */}
+                <div className="space-y-2">
+                  <label className="block text-sky-700 font-medium">LAST NAME</label>
+                  <input
+                    {...register('lname')}
+                    placeholder="Enter your Last name"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  />
+                  {errors.lname && (
+                    <p className="mt-1 text-sm text-red-600">{errors.lname.message}</p>
+                  )}
+                </div>
+
               </div>
 
-              {/* Last Name */}
-              <div className="space-y-2">
-                <label className="block text-green-700 font-medium">LAST NAME</label>
-                <input
-                  {...register('lname')}
-                  placeholder="Enter your Last name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-                {errors.lname && (
-                  <p className="mt-1 text-sm text-red-600">{errors.lname.message}</p>
-                )}
-              </div>
 
               {/* Email */}
               <div className="space-y-2">
-                <label className="block text-green-700 font-medium">EMAIL</label>
+                <label className="block text-sky-700 font-medium">EMAIL</label>
                 <input
                   {...register('emailId')}
                   type="email"
                   placeholder="Enter your email"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
                 {errors.emailId && (
                   <p className="mt-1 text-sm text-red-600">{errors.emailId.message}</p>
@@ -114,12 +120,12 @@ function Register() {
 
               {/* Mobile */}
               <div className="space-y-2">
-                <label className="block text-green-700 font-medium">MOBILE NUMBER</label>
+                <label className="block text-sky-700 font-medium">MOBILE NUMBER</label>
                 <input
                   {...register('mobile')}
                   type="tel"
                   placeholder="Enter your Mobile Number"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
                 {errors.mobile && (
                   <p className="mt-1 text-sm text-red-600">{errors.mobile.message}</p>
@@ -143,11 +149,20 @@ function Register() {
               {/* Submit */}
               <button
                 type="submit"
-                className="w-full py-3 bg-sky-700 text-white rounded-lg font-semibold hover:bg-green-800 transition-colors mt-6"
+                className="w-full py-3 bg-sky-700 text-white rounded-lg font-semibold hover:bg-sky-800 transition-colors mt-6"
               >
                 REGISTER
               </button>
             </form>
+            <p className="text-center mt-4">
+            Don’t have an account?{" "}
+            <button
+              onClick={() => navigate("/login")}
+              className="text-sky-700 font-semibold"
+            >
+              Log In
+            </button>
+          </p>
 
             {/* Link to login (visible only on small screens) */}
             <div className="text-center mt-6 md:hidden">
@@ -155,7 +170,7 @@ function Register() {
                 Already have an account?{" "}
                 <button
                   onClick={() => navigate("/login")}
-                  className="text-green-700 font-semibold hover:underline"
+                  className="text-sky-700 font-semibold hover:underline"
                 >
                   Log In
                 </button>
@@ -171,7 +186,7 @@ function Register() {
               className="w-full h-full object-cover"
             />
 
-            <div className="absolute inset-0 flex items-center justify-center p-4 bg-black/40">
+            {/* <div className="absolute inset-0 flex items-center justify-center p-4 bg-black/40">
               <div className="text-center text-white">
                 <h3 className="text-3xl font-bold mb-4">Welcome Back!</h3>
                 <p className="mb-6">
@@ -179,12 +194,12 @@ function Register() {
                 </p>
                 <button
                   onClick={() => navigate("/login")}
-                  className="px-6 py-2 border-2 border-white rounded-lg font-semibold hover:bg-white hover:text-green-800 transition-colors"
+                  className="px-6 py-2 border-2 border-white rounded-lg font-semibold hover:bg-white hover:text-sky-800 transition-colors"
                 >
                   Sign In
                 </button>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

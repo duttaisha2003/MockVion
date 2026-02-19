@@ -22,18 +22,18 @@ const InterviewStage = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-10 rounded-xl shadow-md max-w-xl text-center space-y-5">
-        <h1 className="text-3xl font-bold text-gray-800">
+    <div className="min-h-[80vh] flex items-center justify-center bg-black">
+      <div className="bg-gray-900 p-10 rounded-xl shadow-md max-w-xl text-center space-y-5">
+        <h1 className="text-3xl font-bold text-white">
           AI Mock Interview
         </h1>
 
-        <p className="text-gray-600">
+        <p className="text-gray-400">
           You will be asked one question at a time.
           Your answers will be evaluated by AI in real-time.
         </p>
 
-        <p className="text-gray-600">
+        <p className="text-gray-400">
           Make sure your camera & mic are ready before starting.
         </p>
 

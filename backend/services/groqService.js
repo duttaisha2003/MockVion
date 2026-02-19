@@ -17,61 +17,71 @@ function getGroqClient() {
 export async function generateQuestions(resumeText, interviewType = 'mixed', totalQuestions = 5) {
   try {
     const groq = getGroqClient();
-    
+   
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
-      temperature: 0.3,
+      temperature: 0.7,
+      top_p: 0.9,
+      frequency_penalty: 0.5,
+      presence_penalty: 0.6,
       max_tokens: 2048,
       response_format: { type: "json_object" },
       messages: [
         {
           role: "system",
-          content: `You are a senior technical interviewer.
-          Generate ${totalQuestions} interview questions based on the resume.
-          Consider interview type: ${interviewType}
-          **IMPORTANT RULES:**
-          1. ALWAYS start with "Tell me about yourself" or "Walk me through your background" as the FIRST question
-          2. For technical questions, focus on the candidate's ACTUAL skills from their resume
-          3. Create questions that test DEEP understanding, not just definitions
-          4. Ensure questions are DIVERSE - no two similar questions
+          content: `
           
-          **QUESTION GENERATION GUIDELINES:**
-          
-          For SKILLS-BASED questions (if resume shows JavaScript/React/Node.js etc.):
-          - Ask "why" and "how" questions, not just "what" questions
-          - Example: Instead of "What is async/await?", ask "Why would you use async/await over promises? Can you explain a scenario where async/await made your code more maintainable?"
-          - Ask about real-world problem-solving with their skills
-          - Include scenario-based questions that combine multiple skills
-          
-          For PROJECT-BASED questions:
-          - Reference specific projects mentioned in the resume
-          - Ask about challenges faced and how they overcame them
-          - Ask about architectural decisions and trade-offs
-          
-          For BEHAVIORAL questions:
-          - Make them relevant to the technical context
-          - Ask about teamwork, conflict resolution, learning experiences
-          
-          For SITUATIONAL questions:
-          - Create realistic scenarios based on their tech stack
-          - Present a problem and ask how they'd solve it
-          
-          **DISTRIBUTION RULES:**
-          - First question: ALWAYS introductory ("Tell me about yourself" or similar)
-          - Remaining questions: Mix based on interviewType parameter
-          - For technical questions: Always tie to specific skills in their resume
-          - No duplicate topics or similar question patterns
-          Return a valid JSON object with format:
+          You are a technical interviewer.
+
+          STEP 1:
+          Extract ONLY the technical skills mentioned in the resume.
+          Return them internally as a list called SKILLS.
+          Do NOT invent skills.
+          Do NOT assume skills.
+          Use only what is explicitly written in the resume.
+
+          STEP 2:
+          Generate ${totalQuestions} interview questions strictly using SKILLS.
+
+          STRICT RULES:
+
+          1. First question MUST be:
+            "Tell me about yourself" OR "Walk me through your background"
+
+          2. Every remaining technical question MUST:
+            - Be directly based on ONE skill from SKILLS
+            - Clearly relate to that skill
+            - Mention the skill concept directly in the question
+            - Add  questions from Computer Science Core concepts From SKills Obviously like OOPS concept.
+
+          3. Do NOT generate questions outside SKILLS.
+          4. No duplicate skill usage unless totalQuestions > number of skills.
+          5. Maximum 2 project-based questions.
+          6. Maximum 1 behavioral question.
+          7. Keep questions basic to intermediate.
+          8. Rotate question starters:
+            - What
+            - Why
+            - Explain
+            - Differentiate
+            - How
+
+          AVOID:
+          - Advanced system design
+          - Generic HR questions
+          - Repeating the same skill concept twice
+
+          Return JSON:
+
           {
             "questions": [
               {
-                "question": "string(must add a question related to project from resume)
-                no duplicate or same type question in different interview. ask question related to skills.  ",
-                "type": "technical|behavioral|situational|project-based",
-                "difficulty": "easy|medium|hard",
-                "category": "string (e.g., JavaScript, React, java - fetched from skills of the resume )",
-                "timeLimit": number (seconds),
-                "keywords": ["array", "of", "expected", "keywords"]
+                "question": "string",
+                "type": "technical|behavioral|project-based",
+                "difficulty": "easy|medium",
+                "category": "Exact skill name from SKILLS",
+                "timeLimit": number,
+                "keywords": ["important", "answer", "terms"]
               }
             ]
           }`

@@ -258,6 +258,8 @@ const InterviewRoom = () => {
   const [loading, setLoading] = useState(false);
   const [interviewStarted, setInterviewStarted] = useState(false);
   const [manualMode, setManualMode] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningMessage, setWarningMessage] = useState("");
 
   /* ================= CAMERA + MIC ================= */
   useEffect(() => {
@@ -309,19 +311,35 @@ const InterviewRoom = () => {
 
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
-    recognition.interimResults = false;
-    recognition.lang = "en-US";
+    recognition.interimResults = true;
+    recognition.lang = "en-IN";
 
+    // recognition.onresult = (event) => {
+    //   let finalTranscript = "";
+
+    //   for (let i = 0; i < event.results.length; i++) {
+    //     if (event.results[i].isFinal) {
+    //       finalTranscript += event.results[i][0].transcript + " ";
+    //     }
+    //   }
+
+    //   setAnswerText(finalTranscript.trim());
+    // };
     recognition.onresult = (event) => {
+      let interimTranscript = "";
       let finalTranscript = "";
 
-      for (let i = 0; i < event.results.length; i++) {
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+
         if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript + " ";
+          finalTranscript += transcript + " ";
+        } else {
+          interimTranscript += transcript;
         }
       }
 
-      setAnswerText(finalTranscript.trim());
+      setAnswerText(finalTranscript + interimTranscript);
     };
 
     recognition.onerror = (e) => {
@@ -419,6 +437,54 @@ const InterviewRoom = () => {
       setLoading(false);
     }
   };
+  /* ================= TAB CHANGE DETECTION ================= */
+ useEffect(() => {
+  if (!interviewStarted) return;
+
+  const handleVisibilityChange = () => {
+    if (document.hidden) {
+      setWarningMessage("⚠️ Tab switching is not allowed during the interview.");
+      setShowWarning(true);
+
+      reportProctoringEvent("tab_switch", "medium", {
+        message: "User switched tab or minimized window"
+      });
+    }
+  };
+
+  const handleBlur = () => {
+    setWarningMessage("⚠️ Window lost focus. Please stay on the interview screen.");
+    setShowWarning(true);
+
+    reportProctoringEvent("tab_switch", "medium", {
+      message: "Window lost focus"
+    });
+  };
+
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+  window.addEventListener("blur", handleBlur);
+
+  return () => {
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
+    window.removeEventListener("blur", handleBlur);
+  };
+}, [interviewStarted]);
+
+  const reportProctoringEvent = async (eventType, severity, details = {}) => {
+      try {
+        await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}api/interview/${sessionId}/proctoring`,
+          {
+            eventType,
+            severity,
+            details
+          },
+          { withCredentials: true }
+        );
+      } catch (err) {
+        console.error("Failed to report proctoring event:", err);
+      }
+    };
 
   /* ================= UI ================= */
   return (
@@ -503,6 +569,23 @@ const InterviewRoom = () => {
           )}
         </div>
       </div>
+      {showWarning && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-xl shadow-lg w-96 text-center">
+      <h2 className="text-lg font-semibold text-red-600 mb-3">
+        Proctoring Warning
+      </h2>
+      <p className="text-gray-700 mb-4">{warningMessage}</p>
+      <button
+        onClick={() => setShowWarning(false)}
+        className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+      >
+        I Understand
+      </button>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };

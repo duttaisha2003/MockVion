@@ -53,15 +53,15 @@ const ScoreDetails = () => {
   const { session, scores, answers, resume, proctoring } = data;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-xl p-8">
+    <div className="min-h-screen bg-black p-8">
+      <div className="max-w-6xl mx-auto bg-gray-900 shadow-lg rounded-xl p-8">
 
-        <h1 className="text-3xl font-bold mb-8 text-center">
+        <h1 className="text-3xl font-bold mb-8 text-center text-white">
           Interview Result Summary
         </h1>
 
         {/* ================= SUMMARY ================= */}
-        <div className="grid md:grid-cols-2 gap-8 mb-10">
+        <div className="grid md:grid-cols-2 gap-8 mb-10  text-white">
 
           <div className="space-y-2">
             <p><strong>Status:</strong> {session.status}</p>
@@ -105,7 +105,7 @@ const ScoreDetails = () => {
 
         {/* ================= PROCTORING ================= */}
         {proctoring && (
-          <div className="mb-10 border p-4 rounded-lg bg-yellow-50">
+          <div className="mb-10 border p-4 rounded-lg bg-gray-900 text-gray-400">
             <h2 className="text-xl font-semibold mb-3">Proctoring Summary</h2>
             <p>Background Changes: {proctoring.backgroundChanges}</p>
             <p>Multiple Faces: {proctoring.multipleFacesDetected}</p>
@@ -118,8 +118,8 @@ const ScoreDetails = () => {
         )}
 
         {/* ================= ANSWERS ================= */}
-        <div>
-          <h2 className="text-2xl font-semibold mb-6">
+        <div >
+          <h2 className="text-2xl font-semibold mb-6 text-white">
             Question-wise Breakdown
           </h2>
 
@@ -127,21 +127,21 @@ const ScoreDetails = () => {
             {answers.map((ans, index) => (
               <div
                 key={index}
-                className="border rounded-lg p-6 bg-gray-50"
+                className="border rounded-lg p-6 bg-gray-900 text-white"
               >
-                <p className="font-semibold text-lg mb-2">
+                <p className="font-semibold text-lg mb-2 text-white">
                   Q{index + 1}: {ans.question}
                 </p>
 
-                <p className="mb-2">
+                <p className="mb-2 text-white">
                   <strong>Your Answer:</strong> {ans.answer || "No answer provided"}
                 </p>
 
-                <p className="mb-2">
+                <p className="mb-2 text-white">
                   <strong>Score:</strong> {ans.score}
                 </p>
 
-                <p className="mb-3 text-gray-700">
+                <p className="mb-3 text-white">
                   <strong>Feedback:</strong> {ans.feedback}
                 </p>
 
@@ -170,7 +170,7 @@ const ScoreDetails = () => {
                 )}
 
                 {/* Evaluation Metrics */}
-                <div className="grid grid-cols-3 gap-3 text-xs text-gray-600 mt-4">
+                <div className="grid grid-cols-3 gap-3 text-xs text-gray-400 mt-4">
                   <p>Timeliness: {ans.timeliness}</p>
                   <p>Confidence: {ans.confidence}</p>
                   <p>Noise Level: {ans.noiseLevel}</p>

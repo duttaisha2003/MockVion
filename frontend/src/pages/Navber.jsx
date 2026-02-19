@@ -7,15 +7,15 @@ const Navbar = () => {
   const { isAuthenticated, user,logout } = useAuth();
   const isLoggedIn = isAuthenticated || user;
   return (
-    <header className="bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    <header className="bg-black shadow-sm">
+      <div className="max-w-7xl mx-auto px-6  flex justify-between items-center">
 
         <Link to="/" className="text-2xl font-bold text-sky-800">
-        <img src="public/r.png" alt="logo" height="20px" width="200px"/>
+        <img src="public/logo_final.png" alt="logo" height="10px" width="200px"/>
          
         </Link>
 
-        <nav className="hidden md:flex gap-8 text-sky-800 font-semibold">
+        <nav className="hidden md:flex gap-8 text-white font-semibold">
           <Link to="/homepage">Home</Link>
           <Link to="/interviewstage">Interview</Link>
           <Link to="/score">Score Board</Link>
@@ -23,24 +23,34 @@ const Navbar = () => {
 
         {/* Auth Section */}
         {!isLoggedIn ? (
-          <div className="flex gap-4">
+          <div className="flex gap-4 text-white">
             <Link to="/login" className="font-semibold">Login</Link>
             <Link to="/register" className="font-semibold">Register</Link>
           </div>
         ) : (
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <p className="font-medium text-sky-800">{isLoggedIn.firstName}</p>
-              <p className="text-sm text-sky-800">{isLoggedIn.emailId}</p>
+              <p className="font-medium text-white">{isLoggedIn.firstName}</p>
+              <p className="text-sm text-white">{isLoggedIn.emailId}</p>
             </div>
 
-            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-               <Link to="/profile" ><User className="text-sky-800" /></Link>
+          <Link to="/profile">
+            <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-300">
+              <img
+                src={
+                  user?.image ||
+                  "https://cdn-icons-png.flaticon.com/512/847/847969.png"
+                }
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
             </div>
+          </Link>
+
 
             <button
               onClick={logout}
-              className="text-sky-800 font-semibold"
+              className="text-white font-semibold"
             >
               Logout
             </button>

@@ -58,9 +58,9 @@ const ScoreBoard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-5xl mx-auto bg-white shadow-lg rounded-xl p-8">
-        <h1 className="text-3xl font-bold mb-6 text-center">
+    <div className="min-h-screen bg-black p-8">
+      <div className="max-w-5xl mx-auto bg-gray-900  shadow-lg rounded-xl p-8">
+        <h1 className="text-3xl font-bold mb-6 text-center text-white">
           Interview History
         </h1>
 
@@ -68,13 +68,13 @@ const ScoreBoard = () => {
           {interviews.map((interview) => (
             <div
               key={interview._id}
-              className="border rounded-lg p-5 flex justify-between items-center hover:shadow-md transition"
+              className="border rounded-lg p-5 flex justify-between items-center hover:shadow-md transition text-white"
             >
               <div>
                 <p className="text-lg font-semibold">
                   Interview ID: {interview._id.slice(-6)}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-400">
                   Date: {new Date(interview.startTime).toLocaleString()}
                 </p>
                 <p className="text-sm">
@@ -83,10 +83,10 @@ const ScoreBoard = () => {
               </div>
 
               <div className="text-right">
-                <p className="text-xl font-bold text-blue-600">
+                <p className="text-xl font-bold text-sky-600">
                   {interview.totalScore}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-400">
                   Avg: {interview.averageScore}
                 </p>
 
@@ -94,7 +94,7 @@ const ScoreBoard = () => {
                   onClick={() =>
                     navigate(`/score/${interview._id}`)
                   }
-                  className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded"
+                  className="mt-2 bg-sky-500 hover:bg-sky-600 text-white px-4 py-1 rounded"
                 >
                   View Details
                 </button>

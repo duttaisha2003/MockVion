@@ -45,7 +45,9 @@ const proctoringEventSchema = new mongoose.Schema({
     enum: ['background_change', 'multiple_faces', 'noise_detected', 'tab_switch', 'mobile_usage', 'voice_absent']
   },
   severity: { type: String, enum: ['low', 'medium', 'high'] },
-  details: String
+  details: {
+  type: mongoose.Schema.Types.Mixed
+}
 });
 
 const interviewSessionSchema = new mongoose.Schema({
