@@ -293,7 +293,9 @@ const HomePage = () => {
             <p className="text-gray-300 text-lg max-w-xl">
               Personalized mock interviews built from your resume.
               Real questions. Instant feedback. Smarter improvement.
-            </p>
+            
+              Practice smarter, speak confidently, and walk into every interview fully prepared.
+              Simulate the pressure. Sharpen your edge. Secure the role.</p>
 
             <div className="flex gap-4">
               <Link
