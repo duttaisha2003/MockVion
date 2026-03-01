@@ -6,6 +6,8 @@ function UpdateGetProfile() {
   const { user, loading, updateProfile } = useAuth();
   const navigate = useNavigate();
 
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [age, setAge] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [preview, setPreview] = useState("");
@@ -14,8 +16,10 @@ function UpdateGetProfile() {
   // Prefill existing data
   useEffect(() => {
     if (user) {
+      setFirstName(user.firstName || "");
+      setLastName(user.lastName || "");
       setAge(user.age || "");
-      setPreview(user.image || "");   // ✅ FIXED HERE
+      setPreview(user.image || "");
     }
   }, [user]);
 
@@ -32,6 +36,8 @@ function UpdateGetProfile() {
     setSaving(true);
 
     const formData = new FormData();
+    formData.append("firstName", firstName);
+    formData.append("lastName", lastName);
     formData.append("age", age);
 
     if (imageFile) {
@@ -60,8 +66,8 @@ function UpdateGetProfile() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center items-center px-4">
-      <div className="bg-white w-full max-w-3xl rounded-xl shadow-lg p-8">
+    <div className="min-h-screen bg-black flex justify-center items-center px-4">
+      <div className="bg-gray-900 w-full max-w-3xl rounded-xl shadow-lg p-8">
         <form onSubmit={handleSubmit}>
 
           {/* Profile Header */}
@@ -85,23 +91,46 @@ function UpdateGetProfile() {
             </div>
 
             <div className="text-center md:text-left">
-              <h2 className="text-2xl font-semibold text-gray-800">
-                {user.firstName} {user.lastName}
+              <h2 className="text-2xl font-semibold text-white">
+                {firstName} {lastName}
               </h2>
               <p className="text-gray-500 capitalize">{user.role}</p>
-              <p className="text-sm text-gray-400">{user.emailId}</p>
+              <p className="text-sm text-gray-200">{user.emailId}</p>
             </div>
           </div>
 
-          {/* Profile Details */}
+          {/* Editable Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-            <ProfileField label="First Name" value={user.firstName} />
-            <ProfileField label="Last Name" value={user.lastName} />
+
+            <div>
+              <label className="block text-sm text-white mb-1">
+                First Name
+              </label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg bg-white text-gray-800"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm text-white mb-1">
+                Last Name
+              </label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg bg-white text-gray-800"
+              />
+            </div>
+
             <ProfileField label="Email" value={user.emailId} />
             <ProfileField label="Mobile" value={user.mobile || "Not provided"} />
 
             <div>
-              <label className="block text-sm text-gray-500 mb-1">
+              <label className="block text-sm text-white mb-1">
                 Age
               </label>
               <input
@@ -143,7 +172,7 @@ function UpdateGetProfile() {
 function ProfileField({ label, value }) {
   return (
     <div>
-      <label className="block text-sm text-gray-500 mb-1">{label}</label>
+      <label className="block text-sm text-white mb-1">{label}</label>
       <div className="w-full px-4 py-2 border rounded-lg bg-gray-50 text-gray-800">
         {value}
       </div>

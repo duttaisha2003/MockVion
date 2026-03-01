@@ -93,15 +93,6 @@ const ScoreDetails = () => {
           </div>
         </div>
 
-        {/* ================= RESUME ================= */}
-        {/* {resume && (
-          <div className="mb-10 border p-4 rounded-lg bg-gray-50">
-            <h2 className="text-xl font-semibold mb-3">Resume Used</h2>
-            <p><strong>Name:</strong> {resume.name}</p>
-            <p><strong>Skills:</strong> {resume.skills?.join(", ")}</p>
-            <p><strong>Experience:</strong> {resume.experience}</p>
-          </div>
-        )} */}
 
         {/* ================= PROCTORING ================= */}
         {proctoring && (

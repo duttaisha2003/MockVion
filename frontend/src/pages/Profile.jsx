@@ -29,8 +29,8 @@ function Profile() {
 
   // 3. Logged in → render profile
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center items-center px-4">
-      <div className="bg-white w-full max-w-3xl rounded-xl shadow-lg p-8">
+    <div className="min-h-screen bg-black  flex justify-center items-center px-4">
+      <div className="bg-gray-900 w-full max-w-3xl rounded-xl shadow-lg p-8">
 
         {/* Profile Header */}
         <div className="flex flex-col md:flex-row items-center gap-6 border-b pb-6">
@@ -47,7 +47,7 @@ function Profile() {
           </div>
 
           <div className="text-center md:text-left">
-            <h2 className="text-2xl font-semibold text-gray-800">
+            <h2 className="text-2xl font-semibold text-white">
               {user.firstName} {user.lastName}
             </h2>
             <p className="text-gray-500 capitalize">{user.role}</p>
@@ -56,8 +56,8 @@ function Profile() {
         </div>
 
         {/* Profile Details */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          <ProfileField label="First Name" value={user.firstName} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 text-white">
+          <ProfileField label="First Name"  value={user.firstName} />
           <ProfileField label="Last Name" value={user.lastName} />
           <ProfileField label="Email" value={user.emailId} />
           <ProfileField label="Mobile" value={user.mobile || "Not provided"} />

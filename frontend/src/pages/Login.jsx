@@ -118,7 +118,7 @@ function Login() {
 }
 
 export default Login;
-
+//another side image is here(different design only)
 {/* <div className="min-h-screen flex items-center justify-center bg-black px-4 py-8">
   <div className="flex flex-col md:flex-row w-full max-w-3xl bg-white rounded-xl shadow-lg overflow-hidden">
 

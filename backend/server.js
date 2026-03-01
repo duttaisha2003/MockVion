@@ -12,6 +12,7 @@ import authRoutes from "./routes/UserAuthRoute.js";
 import resumeRoute from "./routes/ResumeRoutes.js";
 import interviewRoutes from "./routes/interviewRoutes.js";
 
+import subjectInterviewRoutes from "./routes/subjectInterviewRoutes.js";
 
 const app = express();
 const httpServer = createServer(app);
@@ -34,6 +35,8 @@ app.use(
   app.use("/api/auth", authRoutes);
 app.use("/resume", resumeRoute);
 app.use('/api/interview', interviewRoutes);
+
+app.use("/api/subject-interview", subjectInterviewRoutes);
 
 // 404 handler
 app.use((req, res) => {

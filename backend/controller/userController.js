@@ -110,25 +110,26 @@ export const updateProfile = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Only fields allowed to update
-    const allowedFields = ["age", "image"];
+    // ✅ Allow only these text fields
+    const allowedFields = ["firstName", "lastName", "age"];
 
     const updateData = {};
 
-    // Handle text fields
+    // Handle text fields safely
     allowedFields.forEach((field) => {
       if (req.body[field] !== undefined) {
-        updateData[field] = req.body[field];
+        updateData[field] = req.body[field].trim();
       }
     });
 
-    // Handle image upload (if file exists)
+    // Handle image upload (multer)
     if (req.file) {
-      updateData.image = req.file.path; 
-      // or req.file.filename depending on your multer config
+      updateData.image = req.file.path;
+      // If using object schema:
+      // updateData.image = { url: req.file.path, publicId: req.file.filename };
     }
 
-    // Check for invalid fields
+    // Validate invalid body fields
     const invalidFields = Object.keys(req.body).filter(
       (field) => !allowedFields.includes(field)
     );
@@ -153,7 +154,7 @@ export const updateProfile = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Profile updated successfully",
       user: updatedUser,
@@ -161,7 +162,7 @@ export const updateProfile = async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Update failed",
     });

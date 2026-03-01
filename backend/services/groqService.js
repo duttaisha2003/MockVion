@@ -65,7 +65,8 @@ export async function generateQuestions(resumeText, interviewType = 'mixed', tot
             - Explain
             - Differentiate
             - How
-
+          9. If Experience exist in resume must ask a question . MANDATORY
+          10. SO , ask about yourself, some basic core concept questions, some question from Projects, and experience(if exist).
           AVOID:
           - Advanced system design
           - Generic HR questions

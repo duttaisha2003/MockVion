@@ -4,7 +4,7 @@ const questionSchema = new mongoose.Schema({
   text: String,
   type: {
     type: String,
-    enum: ['technical', 'behavioral', 'situational', 'project-based'],
+    enum: ['technical', 'behavioral', 'situational', 'project-based',, "conceptual"],
     default: 'technical'
   },
   difficulty: {
@@ -59,7 +59,9 @@ const interviewSessionSchema = new mongoose.Schema({
     resume: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'ParsedResume',
-      required: true
+      required: function () {
+      return this.interviewType === "resume";
+    }
     },
     questions: [questionSchema],
     currentQuestionIndex: {
