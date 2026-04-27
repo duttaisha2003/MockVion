@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
     fetchProfile();
   }, []);
 
-  // 🔑 This is the key addition
+  //  This is the key addition
   const ensureProfileLoaded = async () => {
     if (user) return user;
     return await fetchProfile();

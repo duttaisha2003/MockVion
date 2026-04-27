@@ -107,6 +107,101 @@ export async function generateQuestions(resumeText, interviewType = 'mixed', tot
   }
 }
 
+export async function generateJobQuestionsFromAI(
+  jobText,
+  interviewType = "technical",
+  totalQuestions = 10
+) {
+  try {
+    const groq = getGroqClient();
+
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      temperature: 0.6,
+      top_p: 0.9,
+      max_tokens: 2048,
+      response_format: { type: "json_object" },
+
+      messages: [
+        {
+          role: "system",
+          content: `
+You are a senior technical interviewer.
+
+Your task:
+Generate ${totalQuestions} high-quality interview questions.
+
+STEP 1:
+Extract ONLY the required skills from the JOB DESCRIPTION.
+Store them internally as SKILLS.
+
+STRICT RULES:
+
+- Each question MUST be based on ONE skill from SKILLS
+- Do NOT assume or add extra skills
+- Do NOT go outside job description
+- Keep questions short and clear (no long descriptions)
+- Focus on basic to intermediate level
+- Do NOT include answers or explanations
+- Do NOT repeat same concept
+- Max 1 behavioral question
+- Avoid system design questions
+
+QUESTION STYLE:
+- Use variety: What, Why, How, Explain, Difference
+- Include real-world usage where possible
+
+SPECIAL RULE:
+- First question MUST be:
+  "Tell me about yourself"
+
+OUTPUT FORMAT (STRICT JSON ONLY):
+- No markdown
+- No extra text
+- Must start with { and end with }
+
+{
+  "questions": [
+    {
+      "text": "",
+      "difficulty": "easy|medium",
+      "type": "technical|behavioral",
+      "topic": "specific skill",
+      "category": "skill name",
+      "expectedKeywords": []
+    }
+  ]
+}
+`
+        },
+        {
+          role: "user",
+          content: `
+JOB DESCRIPTION:
+${jobText}
+
+Generate ${totalQuestions} questions.
+`
+        }
+      ]
+    });
+
+    const content = completion.choices[0]?.message?.content;
+
+    if (!content) {
+      throw new Error("No response from AI");
+    }
+
+    const parsed = JSON.parse(content);
+
+    return parsed.questions || [];
+
+  } catch (error) {
+    console.error("Groq Job Qs Error:", error);
+    throw new Error(`Failed to generate job questions: ${error.message}`);
+  }
+}
+
 export async function evaluateAnswer(question, answer) {
   try {
     const groq = getGroqClient();

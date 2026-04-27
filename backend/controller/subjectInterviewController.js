@@ -68,10 +68,10 @@ export const submitSubjectAnswer = async (req, res) => {
       return res.status(400).json({ message: "No active question" });
     }
 
-    /* ===================== 1️⃣ Evaluate Answer ===================== */
+    /* =====================  Evaluate Answer ===================== */
     const evaluation = await evaluateSubjectAnswer(currentQuestion, answer);
 
-    /* ===================== 2️⃣ Store Answer ======================== */
+    /* =====================  Store Answer ======================== */
      session.answers.push({
       question: currentQuestion.text,
       answer,
@@ -82,7 +82,7 @@ export const submitSubjectAnswer = async (req, res) => {
       aiEvaluation: evaluation,
     });
 
-    /* ===================== 3️⃣ Stop If Interview Complete ========== */
+    /* =====================  Stop If Interview Complete ========== */
     if (session.answers.length >= session.totalQuestions) {
       session.status = "completed";
       session.endTime = new Date();
@@ -100,7 +100,7 @@ export const submitSubjectAnswer = async (req, res) => {
       return res.json({ message: "Interview completed", totalScore, averageScore });
     }
 
-    /* ===================== 4️⃣ Decide Next Topic ================== */
+    /* =====================  Decide Next Topic ================== */
     const askedTopics = session.questions.map((q) => q.category);
     const resolvedGaps = session.resolvedGaps || [];
 
@@ -124,14 +124,14 @@ export const submitSubjectAnswer = async (req, res) => {
       }
     }
 
-    /* ===================== 5️⃣ Generate Next Question ================== */
+    /* =====================  Generate Next Question ================== */
     const nextQuestion = await generateSubjectQuestion(
       session.subject,
       nextTopic,
       nextDifficulty
     );
 
-    // Guard: if generator fails, end interview gracefully
+
     if (!nextQuestion) {
       session.status = "completed";
       session.endTime = new Date();
@@ -146,7 +146,7 @@ export const submitSubjectAnswer = async (req, res) => {
       });
     }
 
-   /* ===================== 6️⃣ Store Next Question ================== */
+   /* =====================  Store Next Question ================== */
     if (!Array.isArray(session.questions)) session.questions = [];
     if (!Array.isArray(session.resolvedGaps)) session.resolvedGaps = [];
 

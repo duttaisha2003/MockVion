@@ -25,27 +25,21 @@
 
 //================================================================================
 
+
 import express from "express";
 import multer from "multer";
 import { extractTextFromPDF } from "../utils/pdfparser.js";
-
+import { parseResumeText } from "../utils/resumePerser.js";
+import { enhanceResumeWithAI } from "../utils/resumeAgent.js";
+import ParsedResume from "../model/ParsedResume.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
+import { storeResumeInPinecone } from "../utils/storeResumeInPinecone .js";
 const router = express.Router();
-function normalizeName(name) {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z\s]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
 
-
-const storage = multer.memoryStorage();
-
+// ---------------- MULTER CONFIG ----------------
 const upload = multer({
-  storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB
-  },
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (req, file, cb) => {
     if (file.mimetype !== "application/pdf") {
       return cb(new Error("Only PDF files are allowed"));
@@ -54,104 +48,112 @@ const upload = multer({
   }
 });
 
-// Test route: extract PDF text
-import ParsedResume from "../model/ParsedResume.js";
-import { parseResumeText } from "../utils/resumePerser.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
+// ---------------- UPLOAD RESUME ----------------
 router.post("/upload",authMiddleware,upload.single("resume"),async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
       }
+      
 
+      // 1. PDF → TEXT
       const text = await extractTextFromPDF(req.file.buffer);
+
+      // 2. RULE PARSER
       const parsedData = parseResumeText(text);
 
-        
-      // ---------------- NAME VALIDATION ----------------
-      const resumeName = normalizeName(parsedData.name);
-      //const userName = normalizeName(req.user.name); 
-      // If you have firstName + lastName:
-       const userName = normalizeName(`${req.user.firstName} ${req.user.lastName}`);
+      // 3. AI ENHANCEMENT (only if needed)
+      let finalData = parsedData;
 
-      if (!resumeName || !userName) {
-        return res.status(400).json({
-          message: "Unable to verify resume name"
+      const shouldUseAI =
+        parsedData.skills.length < 3 ||
+        parsedData.projects.length === 0 ||
+        !parsedData.email;
+
+      if (shouldUseAI) {
+        const aiData = await enhanceResumeWithAI({
+          rawText: text,
+          parsedData
         });
+
+        if (aiData) {
+          finalData = {
+            ...parsedData,
+            ...aiData,
+            skills: [
+              ...new Set([
+                ...(parsedData.skills || []),
+                ...(aiData.skills || [])
+              ])
+            ]
+          };
+        }
       }
 
-      if (!resumeName.includes(userName)) {
-        return res.status(400).json({
-          message: "Resume name does not match logged-in user"
-        });
-      }
+      // attach user
+      finalData.user = req.user._id;
+      const achievements = (finalData.achievements || []).map((item) => {
+  // if AI/parser returns string
+  if (typeof item === "string") {
+    return {
+      title: item,
+      description: ""
+    };
+  }
 
-      parsedData.user = req.user._id;
+  // if already object
+  return {
+    title: item.title || "",
+    description: item.description || ""
+  };
+});
 
-      //  duplicate resume upload korbe na
-      const existingResume = await ParsedResume.findOne({
-        user: req.user._id
+/* overwrite achievements */
+finalData.achievements = achievements;
+      // 4. UPSERT (update or create)
+      const savedResume = await ParsedResume.findOneAndUpdate(
+        { user: req.user._id },
+        finalData,
+        { new: true, upsert: true }
+      );
+      //5. save to pinecone
+      await storeResumeInPinecone(savedResume);
+
+      return res.json({
+        success: true,
+        message: "Resume processed successfully",
+        data: savedResume
       });
 
-      // if (existingResume) {
-      //   return res.status(400).json({
-      //     message: "Resume already uploaded for this user"
-      //   });
-      // }
-      // Check if resume exists
-      
-      let savedResume;
-
-      if (existingResume) {
-        // UPDATE existing
-        savedResume = await ParsedResume.findOneAndUpdate(
-          { user: req.user._id },
-          parsedData,
-          { new: true }
-        );
-
-        return res.json({
-          message: "Resume updated successfully",
-          data: savedResume
-        });
-
-      } else {
-        // CREATE new
-        savedResume = await ParsedResume.create(parsedData);
-
-        return res.json({
-          message: "Resume uploaded successfully",
-          data: savedResume
-        });
-      }
-
-      // const savedResume = await ParsedResume.create(parsedData);
-
-      // res.json({
-      //   message: "Resume uploaded successfully",
-      //   data: savedResume
-      // });
-
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: error.message });
+      console.error("UPLOAD ERROR:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error processing resume"
+      });
     }
   }
 );
 
+// ---------------- GET RESUME ----------------
 router.get("/getResume", authMiddleware, async (req, res) => {
   try {
     const resume = await ParsedResume.findOne({
       user: req.user._id
     });
 
-    res.json({
+    return res.json({
+      success: true,
       exists: !!resume,
       resume: resume || null
     });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("GET ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching resume"
+    });
   }
 });
 

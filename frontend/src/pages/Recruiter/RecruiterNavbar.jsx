@@ -1,19 +1,18 @@
+
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "../AuthContext";
-import { Menu, X, LogOut, ChevronDown } from "lucide-react";
+import { useRecruiterAuth } from "./RecruiterAuthContext";
+import { Menu, X, LogOut } from "lucide-react";
 
 const NAV_LINKS = [
-  { to: "/homepage",       label: "Home" },
-  { to: "/interviewstage", label: "Interview" },
-  { to: "/score",          label: "Score Board" },
-  { to: "/prep",           label: "Preparation" },
-  { to: "/job-board",      label: "Job Board" },
+  { to: "/recruiter-homepage",     label: "Home" },
+  { to: "/recruiter-getAllJob",     label: "All Jobs" },
+  { to: "/recruiter-manage-jobs",  label: "Manage Jobs" },
+  { to: "/create-job",             label: "Post a Job" },
 ];
 
-const Navbar = () => {
-  const { isAuthenticated, user, logout } = useAuth();
-  const isLoggedIn = isAuthenticated || user;
+const RecruiterNavbar = () => {
+  const { recruiter, logoutRecruiter } = useRecruiterAuth();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -24,9 +23,9 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
 
         {/* ── Logo ── */}
-        <Link to="/" className="flex items-center shrink-0">
+        <Link to="/recruiter-homepage" className="flex items-center shrink-0">
           <img
-            src="public/logo_final.png"
+            src="/logo_final.png"
             alt="logo"
             className="h-9 w-auto object-contain"
           />
@@ -50,17 +49,17 @@ const Navbar = () => {
 
         {/* ── Auth ── */}
         <div className="hidden md:flex items-center gap-3">
-          {!isLoggedIn ? (
+          {!recruiter ? (
             <>
               <Link
-                to="/login"
+                to="/recruiter-login"
                 className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-300
                            hover:text-white hover:bg-slate-800 transition-all duration-150"
               >
                 Login
               </Link>
               <Link
-                to="/register"
+                to="/recruiter-register"
                 className="px-4 py-2 rounded-xl text-sm font-bold text-white
                            bg-sky-600 hover:bg-sky-500 transition-all duration-150
                            shadow-lg shadow-sky-900/40"
@@ -72,25 +71,23 @@ const Navbar = () => {
             <div className="flex items-center gap-3">
               {/* user info */}
               <div className="text-right hidden lg:block">
-                <p className="text-white text-sm font-semibold leading-none">{isLoggedIn.firstName}</p>
-                <p className="text-slate-500 text-xs mt-0.5">{isLoggedIn.emailId}</p>
+                <p className="text-white text-sm font-semibold leading-none">{recruiter.firstName}</p>
+                <p className="text-slate-500 text-xs mt-0.5">{recruiter.email}</p>
               </div>
 
               {/* avatar */}
-              <Link to="/profile">
-                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-sky-700
-                                hover:border-sky-500 transition-colors shadow-lg shadow-sky-950/50">
-                  <img
-                    src={user?.image || "https://cdn-icons-png.flaticon.com/512/847/847969.png"}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </Link>
+              <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-sky-700
+                              hover:border-sky-500 transition-colors shadow-lg shadow-sky-950/50">
+                <img
+                  src={recruiter?.image || "https://cdn-icons-png.flaticon.com/512/847/847969.png"}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              </div>
 
               {/* logout */}
               <button
-                onClick={logout}
+                onClick={logoutRecruiter}
                 title="Logout"
                 className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold
                            text-slate-400 hover:text-red-400 hover:bg-slate-800/70
@@ -131,10 +128,10 @@ const Navbar = () => {
           ))}
 
           <div className="pt-3 border-t border-slate-800 mt-3">
-            {!isLoggedIn ? (
+            {!recruiter ? (
               <div className="flex gap-3">
                 <Link
-                  to="/login"
+                  to="/recruiter-login"
                   onClick={() => setMenuOpen(false)}
                   className="flex-1 text-center px-4 py-2.5 rounded-lg text-sm font-semibold
                              text-slate-300 border border-slate-700 hover:bg-slate-800 transition"
@@ -142,7 +139,7 @@ const Navbar = () => {
                   Login
                 </Link>
                 <Link
-                  to="/register"
+                  to="/recruiter-register"
                   onClick={() => setMenuOpen(false)}
                   className="flex-1 text-center px-4 py-2.5 rounded-xl text-sm font-bold
                              bg-sky-600 hover:bg-sky-500 text-white transition shadow-lg"
@@ -152,25 +149,21 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex items-center justify-between">
-                <Link
-                  to="/profile"
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-3"
-                >
+                <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-sky-700">
                     <img
-                      src={user?.image || "https://cdn-icons-png.flaticon.com/512/847/847969.png"}
+                      src={recruiter?.image || "https://cdn-icons-png.flaticon.com/512/847/847969.png"}
                       alt="Profile"
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div>
-                    <p className="text-white text-sm font-semibold">{isLoggedIn.firstName}</p>
-                    <p className="text-slate-500 text-xs">{isLoggedIn.emailId}</p>
+                    <p className="text-white text-sm font-semibold">{recruiter.firstName}</p>
+                    <p className="text-slate-500 text-xs">{recruiter.email}</p>
                   </div>
-                </Link>
+                </div>
                 <button
-                  onClick={() => { logout(); setMenuOpen(false); }}
+                  onClick={() => { logoutRecruiter(); setMenuOpen(false); }}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold
                              text-slate-400 hover:text-red-400 hover:bg-slate-800 transition"
                 >
@@ -185,4 +178,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default RecruiterNavbar;

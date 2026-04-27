@@ -1,11 +1,13 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router";
 import { z } from "zod";
 import axios from "axios";
 import { useAuth } from "../AuthContext";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 
 const loginSchema = z.object({
   emailId: z.string().email("Please enter a valid email address"),
@@ -15,14 +17,9 @@ const loginSchema = z.object({
 function Login() {
   const navigate = useNavigate();
   const { setIsAuthenticated } = useAuth();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(loginSchema),
-  });
-
+  const {register,handleSubmit,formState: { errors },} = useForm({
+    resolver: zodResolver(loginSchema),});
+  const [showPassword, setShowPassword] = useState(false);
   const onSubmit = async (data) => {
     try {
       const res = await axios.post(
@@ -75,12 +72,24 @@ function Login() {
             {/* Password */}
             <div>
               <label className="block text-sky-700 font-medium">PASSWORD</label>
-              <input
-                {...register("password")}
-                type="password"
-                className="w-full px-4 py-3 border rounded-lg"
-                placeholder="Enter your password"
-              />
+
+              <div className="relative">
+                <input
+                  {...register("password")}
+                  type={showPassword ? "text" : "password"}
+                  className="w-full px-4 py-3 border rounded-lg pr-10"
+                  placeholder="Enter your password"
+                />
+
+                {/* Eye Button */}
+                <span
+                  className="absolute right-3 top-3 cursor-pointer text-gray-600"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              </div>
+
               {errors.password && (
                 <p className="text-red-600">{errors.password.message}</p>
               )}

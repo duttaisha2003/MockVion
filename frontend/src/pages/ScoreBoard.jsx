@@ -58,8 +58,8 @@ const ScoreBoard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black p-8">
-      <div className="max-w-5xl mx-auto bg-gray-900  shadow-lg rounded-xl p-8">
+    <div className="min-h-screen bg-transparent p-8">
+      <div className="max-w-5xl mx-auto bg-transparent  shadow-lg rounded-xl p-8">
         <h1 className="text-3xl font-bold mb-6 text-center text-white">
           Interview History
         </h1>

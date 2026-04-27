@@ -1,7 +1,8 @@
 import InterviewSession from '../model/interviewSession.js';
 import ParsedResume from '../model/ParsedResume.js';
-import { generateQuestions, evaluateAnswer } from '../services/groqService.js';
-
+import { generateQuestions, evaluateAnswer,generateJobQuestionsFromAI } from '../services/groqService.js';
+import Application from "../model/Application.js";
+import Job from "../model/job.js";
 export const startInterview = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -54,7 +55,56 @@ export const startInterview = async (req, res) => {
     });
   }
 };
+export const startJobInterview = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { jobId, interviewType = "technical", totalQuestions = 10 } = req.body;
 
+    if (!jobId) {
+      return res.status(400).json({ success: false, message: "jobId is required" });
+    }
+
+    
+    const job = await Job.findOne({ jobId });
+    if (!job) {
+      return res.status(404).json({ success: false, message: "Job not found" });
+    }
+
+    const existingApplication = await Application.findOne({ jobId, userId });
+    if (existingApplication?.resultId) {
+      return res.status(400).json({ success: false, message: "You already attempted this interview" });
+    }
+
+    const generatedQuestions = await generateJobQuestions(job, interviewType, totalQuestions);
+
+    const interviewSession = new InterviewSession({
+      user: userId,
+      questions: generatedQuestions,
+      currentQuestionIndex: -1,
+      status: "pending",
+      interviewType,
+      totalQuestions,
+      sessionToken: generateSessionToken(),
+      roomId: generateRoomId(),
+      autoSubmitted: false
+    });
+
+    await interviewSession.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Job interview created",
+      data: {
+        sessionId: interviewSession._id,
+        totalQuestions: interviewSession.questions.length
+      }
+    });
+
+  } catch (error) {
+    console.error("Start Job Interview Error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 export const beginInterview = async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -300,111 +350,67 @@ export const addProctoringEvent = async (req, res) => {
   }
 };
 
+
 export const completeInterview = async (req, res) => {
   try {
     const { sessionId } = req.params;
     const userId = req.user._id;
-
-    const session = await InterviewSession.findOne({
-      _id: sessionId,
-      user: userId
-    });
+    const { jobId } = req.body; 
+      console.log(jobId);
+    const session = await InterviewSession.findOne({ _id: sessionId, user: userId });
 
     if (!session) {
-      return res.status(404).json({
-        success: false,
-        message: "Session not found"
-      });
+      return res.status(404).json({ success: false, message: "Session not found" });
     }
 
     if (session.status === "completed") {
-      return res.json({
-        success: true,
-        message: "Interview already completed",
-        data: {
-          sessionId: session._id,
-          totalScore: session.totalScore,
-          averageScore: session.averageScore,
-          performance: session.performance,
-          duration: session.duration
-        }
-      });
+      return res.json({ success: true, message: "Interview already completed", data: session });
     }
 
+    
     session.status = "completed";
     session.endTime = new Date();
-    session.duration = Math.floor(
-      (session.endTime - session.startTime) / 1000
-    );
+    session.duration = Math.floor((session.endTime - session.startTime) / 1000);
 
-    const technicalAnswers = session.answers.filter((ans, idx) =>
-      session.questions[idx]?.type === "technical"
-    );
-
-    const behavioralAnswers = session.answers.filter((ans, idx) =>
-      session.questions[idx]?.type === "behavioral"
-    );
-
-    session.performance = {
-      technicalScore:
-        technicalAnswers.length > 0
-          ? technicalAnswers.reduce(
-              (sum, ans) => sum + ans.score,
-              0
-            ) / technicalAnswers.length
-          : 0,
-
-      behavioralScore:
-        behavioralAnswers.length > 0
-          ? behavioralAnswers.reduce(
-              (sum, ans) => sum + ans.score,
-              0
-            ) / behavioralAnswers.length
-          : 0,
-
-      communicationScore:
-        session.answers.length > 0
-          ? session.answers.reduce(
-              (sum, ans) => sum + (ans.confidence || 0),
-              0
-            ) / session.answers.length
-          : 0,
-
-      timeManagementScore:
-        session.answers.length > 0
-          ? session.answers.reduce((sum, ans) => {
-              const timelinessScore = ans.timeliness
-                ? Math.max(0, 10 - ans.timeliness / 30)
-                : 5;
-              return sum + timelinessScore;
-            }, 0) / session.answers.length
-          : 0
-    };
+   
+    session.totalScore = session.answers.reduce((sum, ans) => sum + (ans.score || 0), 0);
+    session.averageScore = session.answers.length > 0
+      ? session.totalScore / session.answers.length
+      : 0;
 
     await session.save();
+
+    if (jobId) {
+      await Application.findOneAndUpdate(
+        { jobId, userId },
+        {
+          jobId,
+          userId,
+          resultId: session._id,
+          score: parseFloat(session.averageScore.toFixed(2)),
+          status: "applied"   
+        },
+        { upsert: true, new: true }
+      );
+    }
+
 
     res.json({
       success: true,
       message: "Interview completed successfully",
       data: {
         sessionId: session._id,
-        totalScore: session.totalScore,
         averageScore: session.averageScore,
-        performance: session.performance,
-        duration: session.duration,
-        proctoringSummary: session.proctoringSummary
+        totalScore: session.totalScore,
+        totalAnswers: session.answers.length
       }
     });
 
   } catch (error) {
     console.error("Complete Interview Error:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message || "Failed to complete interview"
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
-
 export const getInterviewResults = async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -486,11 +492,26 @@ async function generateInterviewQuestions(resume, interviewType, totalQuestions)
     type: q.type || 'technical',
     difficulty: q.difficulty || 'medium',
     category: q.category || 'General',
-    timeLimit: q.timeLimit || 120,
+    timeLimit: q.timeLimit && q.timeLimit >= 30 ? q.timeLimit : 120,
     expectedKeywords: q.keywords || []
   }));
 }
+async function generateJobQuestions(job, interviewType, totalQuestions) {
+  const jobText = `
+    Title: ${job.title}
+    Skills: ${(job.skills || []).join(", ")}
+    Description: ${job.description}
+  `;
 
+  const questions = await generateJobQuestionsFromAI(jobText,interviewType,totalQuestions);
+
+  return questions.map(q => ({
+    text: q.text,
+    type: q.type || "technical",
+    difficulty: q.difficulty || "medium",
+    timeLimit: q.timeLimit && q.timeLimit >= 30 ? q.timeLimit : 120
+  }));
+}
 function generateSessionToken() {
   return 'sess_' + Math.random().toString(36).substr(2, 16);
 }

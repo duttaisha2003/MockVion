@@ -1,9 +1,9 @@
 import express from "express";
 import { startInterview,beginInterview,getCurrentQuestion,submitAnswer,addProctoringEvent,
-  completeInterview,getInterviewResults} from "../controller/interviewController.js";
+  completeInterview,getInterviewResults, startJobInterview} from "../controller/interviewController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import InterviewSession from "../model/interviewSession.js";
-
+import Application from "../model/Application.js";
 const router = express.Router();
 
 // Start new interview session
@@ -47,27 +47,33 @@ router.get("/my-interviews", authMiddleware, async (req, res) => {
 });
 // Get interview results
 router.get("/:sessionId/results", authMiddleware, getInterviewResults);
+// Start job-based interview
+router.post("/start-job", authMiddleware, startJobInterview);
 
-// List user's interviews
-// router.get("/my-interviews", authMiddleware, async (req, res) => {
-//   try {
-//     const interviews = await InterviewSession.find({
-//       user: req.user._id,
-//       status: "completed"
-//     })
-//       .sort({ createdAt: -1 })
-//       .select("_id startTime endTime totalScore averageScore duration");
 
-//     res.json({
-//       success: true,
-//       data: interviews
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: error.message
-//     });
-//   }
-// });
+router.get("/check-applied/:jobId", authMiddleware, async (req, res) => {
+  try {
+    
+
+    const application = await Application.findOne({
+      jobId: req.params.jobId,
+      userId: req.user._id
+    });
+
+    res.json({
+      success: true,
+      applied: !!application
+    });
+
+  } catch (error) {
+    console.log("ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 
 export default router;

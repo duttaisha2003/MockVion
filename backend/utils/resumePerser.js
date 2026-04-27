@@ -30,10 +30,13 @@ export function parseResumeText(text) {
 
   const skills = extractSkills(text);
   const projectsRaw = extractSection("PROJECTS");
-  const achievements = extractSection("ACHIEVEMENTS");
+const achievementsRaw = extractSection("ACHIEVEMENTS");
   const hobbies = extractSection("HOBBIES");
   const experience = extractSection("EXPERIENCE");
-
+const achievements = achievementsRaw.map(item => ({
+  title: item.split("\n")[0] || item,
+  description: item
+}));
   return {
     name: extractName(text),
     email: text.match(emailRegex)?.[0] || "",

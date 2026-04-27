@@ -21,7 +21,12 @@ const parsedResumeSchema = new mongoose.Schema(
         duration: String
       }
     ],
-    achievements: [String],
+    achievements: [
+      {
+        title: String,
+        description: String
+      }
+    ],
     hobbies: [String],
     experience: [
       {

@@ -11,6 +11,7 @@ import main from "./config/db.js";
 import authRoutes from "./routes/UserAuthRoute.js";
 import resumeRoute from "./routes/ResumeRoutes.js";
 import interviewRoutes from "./routes/interviewRoutes.js";
+import recruiterRoutes from "./routes/recruiterRoutes.js";
 
 import subjectInterviewRoutes from "./routes/subjectInterviewRoutes.js";
 
@@ -37,7 +38,7 @@ app.use("/resume", resumeRoute);
 app.use('/api/interview', interviewRoutes);
 
 app.use("/api/subject-interview", subjectInterviewRoutes);
-
+app.use("/api/recruiter", recruiterRoutes);
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
@@ -67,8 +68,8 @@ app.use((err, req, res, next) => {
 main()
   .then(() => {
     httpServer.listen(process.env.PORT, () => {
-      console.log("✅ Server listening at port:", process.env.PORT);
-      console.log("📡 HTTP Endpoints:");
+      console.log(" Server listening at port:", process.env.PORT);
+      console.log(" HTTP Endpoints:");
       console.log("   - POST /api/interview/start");
       console.log("   - POST /api/interview/:sessionId/begin");
       console.log("   - GET  /api/interview/:sessionId/current-question");
@@ -77,6 +78,6 @@ main()
     });
   })
   .catch((err) => {
-    console.error("❌ DB Error:", err);
+    console.error(" DB Error:", err);
     process.exit(1);
   });

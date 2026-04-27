@@ -15,11 +15,29 @@ import SubjectWiseInterviewRoom from "./pages/SubjectWiseInterviewRoom";
 import ProtectedRoute from "./ProtectedRoute";
 import Profile from "./pages/Profile";
 import UpdateGetProfile  from "./pages/UpdateGetProfile"
+
+import RecruiterRegister from "./pages/Recruiter/RecruterRegister";
+import RecruiterLogin from "./pages/Recruiter/RecruiterLogin";
+import CreateJob from "./pages/CreateJob";
+import RecruiterDashboard from "./pages/Recruiter/RecruiterDashboard";
+import RecruiterHomepage from "./pages/Recruiter/RecruiterHomepage";
+import RecruiterManageJobs from "./pages/Recruiter/RecruiterManageJobs";
+import RecruiterGetAllJobs from"./pages/Recruiter/RecruiterGetAllJobs";
+
+import RecruiterLayout from "./pages/Recruiter/RecruiterLayout"
+import RecruiterProtectedRoute from "./pages/Recruiter/RecruiterProtectedRoute";
+import JobBoard from "./pages/JobBoard";
+import Preparation from "./pages/Preparation";
+import JobApply from "./pages/JobApply";
+import NebulaBackground from "./NebulaBackground";
+
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route element={<Layout />}>
+       <NebulaBackground />
+      <div style={{ position: "relative", zIndex: 1 }}>
+        <Routes>
+          <Route element={<Layout />}>
 
           {/* Public routes */}
           <Route path="/" element={<Dashboard />} />
@@ -27,25 +45,48 @@ function App() {
           <Route path="/register" element={<Register />} />
 
           {/* Protected routes */}
+          
+
           <Route path="/homepage"       element={<ProtectedRoute> <Homepage />        </ProtectedRoute>}/>
 
-          <Route path="/interviewstage" element={<ProtectedRoute> <InterviewStage />  </ProtectedRoute>}/>
+          // ✅ Correct syntax
+          <Route path="/interviewstage" element={<ProtectedRoute><InterviewStage /></ProtectedRoute>} />
+          <Route path="/interviewstage/:jobId" element={<ProtectedRoute><InterviewStage /></ProtectedRoute>} />
 
           <Route path="/interview/:sessionId" element={<ProtectedRoute> <InterviewRoom />   </ProtectedRoute>}/> 
 
           <Route  path="/score"         element={<ProtectedRoute> <ScoreBoard />   </ProtectedRoute>}/>
+          <Route path="/prep"           element={<ProtectedRoute> <Preparation />   </ProtectedRoute>}/>
             
           <Route path="/score/:sessionId" element={<ProtectedRoute><ScoreDetails /></ProtectedRoute>} />
+
+          <Route  path="/job-board"         element={<ProtectedRoute> <JobBoard />   </ProtectedRoute>}/>
+          <Route path="/job-apply/:jobId" element={<ProtectedRoute><JobApply /></ProtectedRoute>} />
 
           <Route  path="/profile"         element={<ProtectedRoute> <Profile />   </ProtectedRoute>}/>
           <Route  path="/updateProfile"         element={<ProtectedRoute> <UpdateGetProfile />   </ProtectedRoute>}/>
 
           {/* Subject-wise Interview */}
           <Route path="/subject-interview" element={ <ProtectedRoute> <SubjectWiseInterviewRoom /></ProtectedRoute>}/>
-
+          
           {/* Subject Score Page */}
-          <Route path="/subject-score/:sessionId" element={ <ProtectedRoute> <ScoreDetails /> </ProtectedRoute>}/></Route>
-      </Routes>
+          <Route path="/subject-score/:sessionId" element={ <ProtectedRoute> <ScoreDetails /> </ProtectedRoute>}/>
+          
+          </Route>
+          <Route element={<RecruiterLayout />}>
+            <Route path="/recruiter-register" element={<RecruiterRegister/>}/>
+            <Route path="/recruiter-login" element={<RecruiterLogin/>}/>
+            <Route path="/create-job" element={<CreateJob/>}/>
+            
+
+            <Route path="/recruiter-dashboard" element={<RecruiterProtectedRoute><RecruiterDashboard /></RecruiterProtectedRoute>} />
+            <Route path="/recruiter-homepage" element={<RecruiterProtectedRoute><RecruiterHomepage /></RecruiterProtectedRoute>} />
+            <Route path="/recruiter-manage-jobs" element={<RecruiterProtectedRoute><RecruiterManageJobs /></RecruiterProtectedRoute>} />
+            <Route path="/recruiter-getAllJob" element={<RecruiterProtectedRoute><RecruiterGetAllJobs /></RecruiterProtectedRoute>} />
+          </Route>
+          
+        </Routes>
+      </div>
     </Router>
   );
 }
