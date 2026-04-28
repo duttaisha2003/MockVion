@@ -3,7 +3,7 @@ import { startInterview,beginInterview,getCurrentQuestion,submitAnswer,addProcto
   completeInterview,getInterviewResults, startJobInterview} from "../controller/interviewController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import InterviewSession from "../model/interviewSession.js";
-import Application from "../model/Application.js";
+import Application from "../model/application.js";
 const router = express.Router();
 
 // Start new interview session
