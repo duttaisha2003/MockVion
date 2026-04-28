@@ -63,8 +63,8 @@ export const loginRecruiter = async (req, res) => {
 
     res.cookie("recruiterToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 60 * 60 * 1000
     });
 
@@ -86,7 +86,11 @@ export const loginRecruiter = async (req, res) => {
 /* ---------------- LOGOUT ---------------- */
 
 export const logoutRecruiter = (req, res) => {
-  res.clearCookie("recruiterToken");
+  res.clearCookie("recruiterToken", {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+});
   res.json({ message: "Logged out successfully" });
 };
 /* ---------------- View Profile ---------------- */
