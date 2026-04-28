@@ -55,8 +55,12 @@ export const login = async (req, res) => {
       process.env.JWT_KEY,
       { expiresIn: "1h" }
     );
-
-    res.cookie("token", token, { maxAge: 60 * 60 * 1000 });
+res.cookie("token", token, {
+  maxAge: 60 * 60 * 1000,
+  httpOnly: true,
+  secure: true,           // required for cross-site HTTPS
+  sameSite: "none",       // required when frontend & backend are different domains
+});
     res.status(200).json({
   success: true,
   user: {
