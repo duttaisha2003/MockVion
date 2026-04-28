@@ -31,7 +31,7 @@ import multer from "multer";
 import { extractTextFromPDF } from "../utils/pdfparser.js";
 import { parseResumeText } from "../utils/resumePerser.js";
 import { enhanceResumeWithAI } from "../utils/resumeAgent.js";
-import ParsedResume from "../model/ParsedResume.js";
+import ParsedResume from "../model/parsedResume.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { storeResumeInPinecone } from "../utils/storeResumeInPinecone .js";
 const router = express.Router();
