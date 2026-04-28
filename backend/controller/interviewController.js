@@ -1,7 +1,7 @@
 import InterviewSession from '../model/interviewSession.js';
-import ParsedResume from '../model/ParsedResume.js';
+import ParsedResume from '../model/parsedResume.js';
 import { generateQuestions, evaluateAnswer,generateJobQuestionsFromAI } from '../services/groqService.js';
-import Application from "../model/Application.js";
+import Application from "../model/application.js";
 import Job from "../model/job.js";
 export const startInterview = async (req, res) => {
   try {

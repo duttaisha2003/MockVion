@@ -2,8 +2,8 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import ParsedResume from "../model/ParsedResume.js";
-import Job from "../model/Job.js";
+import ParsedResume from "../model/parsedResume.js";
+import Job from "../model/job.js";
 import { Pinecone } from "@pinecone-database/pinecone";
 
 const pinecone = new Pinecone({
