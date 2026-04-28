@@ -76,7 +76,7 @@ function App() {
           <Route element={<RecruiterLayout />}>
             <Route path="/recruiter-register" element={<RecruiterRegister/>}/>
             <Route path="/recruiter-login" element={<RecruiterLogin/>}/>
-            <Route path="/create-job" element={<CreateJob/>}/>
+            <Route path="/create-job" element={<RecruiterProtectedRoute><CreateJob/></RecruiterProtectedRoute>}/>
             
 
             <Route path="/recruiter-dashboard" element={<RecruiterProtectedRoute><RecruiterDashboard /></RecruiterProtectedRoute>} />
