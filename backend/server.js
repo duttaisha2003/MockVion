@@ -25,9 +25,9 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: 'https://mock-vion-kktd.vercel.app', 
-    credentials: true,               // allow cookies
-    methods: ['GET', 'POST', 'PUT','PATCH', 'DELETE', 'OPTIONS'],
+    origin: ['https://mock-vion-kktd.vercel.app', 'http://localhost:3000', 'http://localhost:5173'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
