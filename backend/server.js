@@ -25,23 +25,30 @@ app.use(cookieParser());
 
 const allowedOrigins = [
   "http://localhost:3000",
+  "http://localhost:5173",
   "https://mock-vion-d24v.vercel.app"
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
+      // allow mobile apps / postman / curl
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
       }
+
+      return callback(null, true); // TEMP FIX (important for debugging)
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// IMPORTANT: handle preflight globally
+app.options("*", cors());
 
 // Routes
   app.use("/api/auth", authRoutes);
