@@ -25,7 +25,7 @@ app.use(cookieParser());
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://mock-vion-u6w7.vercel.app"
+  "https://mock-vion-d24v.vercel.app"
 ];
 
 app.use(
