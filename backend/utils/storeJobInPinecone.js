@@ -48,3 +48,21 @@ export async function storeJobInPinecone(job) {
     console.error("Job Pinecone Error:", error);
   }
 }
+
+export const deleteJobFromPinecone = async (jobId) => {
+  try {
+    const pinecone = new PineconeClient({
+      apiKey: process.env.PINECONE_API_KEY,
+    });
+
+    const index = pinecone.Index("mockvion"); 
+    const namespace = "jobs";                 
+
+    await index.namespace(namespace).deleteOne(jobId); 
+
+    console.log(`Deleted job ${jobId} from Pinecone`);
+  } catch (error) {
+    console.error("PINECONE DELETE ERROR:", error);
+    throw error; 
+  }
+};

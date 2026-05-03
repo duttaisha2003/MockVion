@@ -203,9 +203,20 @@ Generate ${totalQuestions} questions.
 }
 
 export async function evaluateAnswer(question, answer) {
+  //  skip API call for empty answers
+  if (!answer?.trim() || answer.trim().length < 5) {
+    return {
+      score: 0,
+      feedback: "No answer provided.",
+      strengths: [],
+      improvements: ["Please provide a substantive answer."],
+      keywordsMatched: [],
+    };
+  }
+
   try {
     const groq = getGroqClient();
-    
+
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       temperature: 0,
@@ -214,31 +225,62 @@ export async function evaluateAnswer(question, answer) {
       messages: [
         {
           role: "system",
-          content: `You are an interviewer. Evaluate the candidate's answer.
-          Consider: technical accuracy, completeness, clarity, and relevance.
+          content: `You are a strict technical interviewer evaluating a candidate.
           
-          Return a valid JSON object:
+          Consider: technical accuracy, completeness, clarity, and relevance.
+          SCORING RUBRIC (score 0-10):
+          0-1 : No answer, completely wrong, or irrelevant
+          2-4  : Mentions the topic but is mostly incorrect or dangerously incomplete
+          5-6  : Partially correct — core idea present but missing key details or has errors
+          7-8  : Correct and reasonably complete, minor gaps or imprecision
+          9-10 : Accurate, complete, well-structured, uses precise terminology
+
+          RULES:
+            - Penalize factually incorrect statements (e.g. claiming operator overloading exists in Java)
+            - Do NOT reward vague answers ("it helps with errors") with scores above 5
+            - Differentiate: a better answer must receive a meaningfully higher score
+            - Be consistent: two similar-quality answers must score within 1 point of each other
+
+          Return ONLY a valid JSON object, no markdown, no extra text:
           {
-            "score": number (0-10),
-            "feedback": "string (2-3 sentences)",
-            "strengths": ["array of strengths"],
-            "improvements": ["array of improvement suggestions"],
-            "keywordsMatched": ["array of matched technical terms"]
-          }`
+            "score": <integer 0–10>,
+            "feedback": "<2–3 precise sentences citing specific gaps or strengths>",
+            "strengths": ["<specific strength>"],
+            "improvements": ["<specific, actionable suggestion>"],
+            "keywordsMatched": ["<technical terms correctly used>"]
+          }`,
         },
         {
           role: "user",
-          content: `Question: ${question}\nAnswer: ${answer}\n\nEvaluate and provide feedback.`
-        }
-      ]
+          content: `Question: ${question}\nAnswer: ${answer}\n\nEvaluate and provide feedback.`,
+        },
+      ],
     });
 
-    const content = completion.choices[0]?.message?.content;
-    if (!content) {
-      throw new Error("No evaluation response");
+    const raw = completion.choices[0]?.message?.content;
+    if (!raw) throw new Error("No evaluation response");
+
+    //salvage JSON if model wraps it in markdown
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error("Model returned non-JSON response");
+      parsed = JSON.parse(match[0]);
     }
 
-    return JSON.parse(content);
+    // Validate score is actually a number in range
+    const score = Number(parsed.score);
+    if (isNaN(score) || score < 0 || score > 10) {
+      throw new Error(`Invalid score received: ${parsed.score}`);
+    }
+
+    return {
+      ...parsed,
+      score: Math.round(score), 
+    };
+
   } catch (error) {
     console.error("Evaluation Error:", error);
     throw new Error(`Failed to evaluate answer: ${error.message}`);

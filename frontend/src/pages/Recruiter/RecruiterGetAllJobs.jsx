@@ -54,7 +54,7 @@ const RecruiterManageJobs = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white px-6 py-12">
+    <div className="min-h-screen bg-transparent text-white px-6 py-12">
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
@@ -131,25 +131,20 @@ const RecruiterManageJobs = () => {
                     {/* Actions */}
                     <td className="p-4 flex gap-3">
                       <Link
-                        to={`/jobs/${job._id}`}
+                        to={`/recruiter/jobs/${job.jobId}`}
                         className="text-sky-400 hover:text-sky-300"
                       >
                         <Eye size={18} />
                       </Link>
 
                       <Link
-                        to={`/jobs/edit/${job._id}`}
+                        to={`/recruiter/jobs/edit/${job.jobId}`}
                         className="text-yellow-400 hover:text-yellow-300"
                       >
                         <Edit size={18} />
                       </Link>
 
-                      <button
-                        onClick={() => closeJob(job._id)}
-                        className="text-red-400 hover:text-red-300"
-                      >
-                        <XCircle size={18} />
-                      </button>
+                      
                     </td>
                   </tr>
                 ))

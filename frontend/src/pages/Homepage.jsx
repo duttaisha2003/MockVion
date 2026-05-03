@@ -319,7 +319,7 @@ const HomePage = () => {
                   <p className="text-slate-400 group-hover:text-sky-400 text-sm transition-colors">
                     {resumeFile
                       ? <span className="text-sky-400 font-medium">📄 {resumeFile.name}</span>
-                      : "Click to browse or drag & drop your PDF / DOCX"}
+                      : "Click to browse or drag & drop your PDF "}
                   </p>
                 </div>
                 <input

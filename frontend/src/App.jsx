@@ -29,7 +29,14 @@ import RecruiterProtectedRoute from "./pages/Recruiter/RecruiterProtectedRoute";
 import JobBoard from "./pages/JobBoard";
 import Preparation from "./pages/Preparation";
 import JobApply from "./pages/JobApply";
+import RecruiterApplicants from "./pages/Recruiter/RecruiterApplicants";
+import RecruiterViewCandidates from "./pages/Recruiter/RecuiterViewCandidates";
+import RecruiterPerformance from "./pages/Recruiter/RecruiterPerformance";
 import NebulaBackground from "./NebulaBackground";
+import RecruiterEditJob from "./pages/Recruiter/RecruiterEditJob";
+import RecruiterJobDetail from "./pages/Recruiter/RecruiterJobDetail";
+import RecruiterShortlisted from "./pages/Recruiter/RecruiterShortlisted";
+import RecruiterShortlistedCandidates from "./pages/Recruiter/RecruiterShortlistedcandidates";
 
 function App() {
   return (
@@ -82,7 +89,14 @@ function App() {
             <Route path="/recruiter-dashboard" element={<RecruiterProtectedRoute><RecruiterDashboard /></RecruiterProtectedRoute>} />
             <Route path="/recruiter-homepage" element={<RecruiterProtectedRoute><RecruiterHomepage /></RecruiterProtectedRoute>} />
             <Route path="/recruiter-manage-jobs" element={<RecruiterProtectedRoute><RecruiterManageJobs /></RecruiterProtectedRoute>} />
+            <Route path="/recruiter/jobs/edit/:jobId" element={<RecruiterProtectedRoute><RecruiterEditJob /></RecruiterProtectedRoute>} />
+            <Route path="/recruiter/jobs/:jobId" element={<RecruiterProtectedRoute><RecruiterJobDetail  /></RecruiterProtectedRoute>} />
             <Route path="/recruiter-getAllJob" element={<RecruiterProtectedRoute><RecruiterGetAllJobs /></RecruiterProtectedRoute>} />
+            <Route path="/recruiter-performance/:jobId" element={<RecruiterProtectedRoute><RecruiterApplicants /></RecruiterProtectedRoute>} />
+            <Route path="/recruiter-viewcandidates" element={<RecruiterProtectedRoute><RecruiterViewCandidates /></RecruiterProtectedRoute>} />
+            <Route path="/performance/:resultId" element={<RecruiterProtectedRoute><RecruiterPerformance /></RecruiterProtectedRoute>} />
+           <Route path="/recruiter/job/shortlisted" element={<RecruiterProtectedRoute><RecruiterShortlisted /></RecruiterProtectedRoute>} />
+           <Route path="/recruiter/job/shortlisted/:jobId" element={<RecruiterProtectedRoute><RecruiterShortlistedCandidates /></RecruiterProtectedRoute>} />
           </Route>
           
         </Routes>

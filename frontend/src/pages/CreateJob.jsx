@@ -370,9 +370,9 @@ function CreateJob() {
 
  return (
 
-  <div className="min-h-screen flex items-center justify-center bg-black">
+  <div className="min-h-screen flex items-center justify-center bg-transparent">
 
-    <div className="bg-white p-10 rounded-xl w-[800px]">
+    <div className="bg-white p-10 mt-5 mb-5 rounded-xl w-[800px]">
 
       <h2 className="text-3xl text-sky-800 mb-6">
         Create Job

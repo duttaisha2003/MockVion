@@ -9,108 +9,179 @@ import { useSearchParams } from "react-router-dom";
 const SubjectWiseInterviewRoom = () => {
   const navigate = useNavigate();
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
+  const faceCheckRef = useRef(null);
+  const timerRef = useRef(null);
 
   const [sessionId, setSessionId] = useState(null);
   const [question, setQuestion] = useState("");
   const [answerText, setAnswerText] = useState("");
   const [loading, setLoading] = useState(false);
   const [interviewStarted, setInterviewStarted] = useState(false);
-  const [manualMode, setManualMode] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
   const [warningMessage, setWarningMessage] = useState("");
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
 
-    const [searchParams] = useSearchParams();
-    const subject = searchParams.get("subject");
-  const {transcript,listening,resetTranscript,browserSupportsSpeechRecognition,} =
-       useSpeechRecognition({clearTranscriptOnListen: false,});
+  /* ── gate screen state ── */
+  const [permStage, setPermStage] = useState("idle");
+  const [cameraReady, setCameraReady] = useState(false);
+  const [micReady, setMicReady] = useState(false);
+  const [faceDetected, setFaceDetected] = useState(false);
 
-  /* ================= SYNC TRANSCRIPT ================= */
+  /* ── timer state ── */
+  const [timeLeft, setTimeLeft] = useState(120);
+  const [questionTimeLimit, setQuestionTimeLimit] = useState(120);
+
+  /* ── question tracking ── */
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [totalQuestions, setTotalQuestions] = useState(0);
+
+  const [searchParams] = useSearchParams();
+  const subject = searchParams.get("subject");
+
+  const { transcript, listening, resetTranscript, browserSupportsSpeechRecognition } =
+    useSpeechRecognition({ clearTranscriptOnListen: false });
+
+  /* ── sync transcript ── */
   useEffect(() => {
-    if (!manualMode) {
-      setAnswerText(transcript);
-    }
-  }, [transcript, manualMode]);
+    setAnswerText(transcript);
+  }, [transcript]);
 
-  /* ================= CAMERA ================= */
-  useEffect(() => {
-    const startMedia = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      } catch (err) {
-        console.warn("Camera/Microphone not available");
-      }
-    };
-
-    startMedia();
+  /* ── cleanup ── */
+  useEffect(() => () => {
+    if (faceCheckRef.current) clearInterval(faceCheckRef.current);
+    if (timerRef.current) clearInterval(timerRef.current);
   }, []);
 
-  /* ================= TEXT TO SPEECH ================= */
+  /* ── auto submit on timer end ── */
+  useEffect(() => {
+    if (timeLeft === 0 && interviewStarted) submitAnswer(true);
+  }, [timeLeft]);
+
+  const canBegin = cameraReady && micReady && faceDetected;
+
+  /* ════════════════════════════════════════
+     FACE DETECTION
+  ════════════════════════════════════════ */
+  const startFaceDetection = () => {
+    if (faceCheckRef.current) clearInterval(faceCheckRef.current);
+    faceCheckRef.current = setInterval(() => {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      if (!video || !canvas || video.readyState < 2) return;
+      const ctx = canvas.getContext("2d");
+      canvas.width = 80;
+      canvas.height = 60;
+      ctx.drawImage(video, 0, 0, 80, 60);
+      const data = ctx.getImageData(0, 0, 80, 60).data;
+      let sum = 0, sumSq = 0;
+      const pixels = data.length / 4;
+      for (let i = 0; i < data.length; i += 4) {
+        const b = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        sum += b;
+        sumSq += b * b;
+      }
+      const mean = sum / pixels;
+      const variance = sumSq / pixels - mean * mean;
+      setFaceDetected(variance > 200 && mean > 20 && mean < 240);
+    }, 800);
+  };
+
+  /* ════════════════════════════════════════
+     REQUEST PERMISSIONS
+  ════════════════════════════════════════ */
+  const requestPermissions = async () => {
+    setPermStage("requesting");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.onloadedmetadata = () => startFaceDetection();
+      }
+      setCameraReady(!!stream.getVideoTracks()[0]?.enabled);
+      setMicReady(!!stream.getAudioTracks()[0]?.enabled);
+      setPermStage("granted");
+    } catch {
+      setPermStage("denied");
+    }
+  };
+
+  /* ════════════════════════════════════════
+     TIMER
+  ════════════════════════════════════════ */
+  const startTimer = (seconds) => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setTimeLeft(seconds);
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) { clearInterval(timerRef.current); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const stopTimer = () => { if (timerRef.current) clearInterval(timerRef.current); };
+
+  const formatTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  const timerPct = Math.max(0, (timeLeft / questionTimeLimit) * 100);
+  const timerColor = timerPct > 50 ? "#16a34a" : timerPct > 25 ? "#d97706" : "#dc2626";
+
+  /* ════════════════════════════════════════
+     TTS
+  ════════════════════════════════════════ */
   const speakQuestion = (text, onEnd) => {
     if (!window.speechSynthesis) return;
-
     window.speechSynthesis.cancel();
-
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "en-US";
     utterance.rate = 0.9;
-
-    utterance.onend = () => {
-      if (onEnd) onEnd();
-    };
-
+    setIsSpeaking(true);
+    utterance.onend = () => { setIsSpeaking(false); if (onEnd) onEnd(); };
+    utterance.onerror = () => setIsSpeaking(false);
     window.speechSynthesis.speak(utterance);
   };
 
-  /* ================= SPEECH CONTROL ================= */
+  /* ════════════════════════════════════════
+     SPEECH RECOGNITION
+  ════════════════════════════════════════ */
   const startSpeechRecognition = () => {
-    if (manualMode) return;
-
     if (!browserSupportsSpeechRecognition) {
       alert("Browser does not support speech recognition");
       return;
     }
-
     resetTranscript();
-
-    SpeechRecognition.startListening({
-      continuous: true,
-      interimResults: true,
-      language: "en-IN",
-    });
+    SpeechRecognition.startListening({ continuous: true, interimResults: true, language: "en-IN" });
   };
 
-  const stopSpeechRecognition = () => {
-    SpeechRecognition.stopListening();
-  };
+  const stopSpeechRecognition = () => SpeechRecognition.stopListening();
 
-  /* ================= START SUBJECT INTERVIEW ================= */
+  /* ════════════════════════════════════════
+     START INTERVIEW
+  ════════════════════════════════════════ */
   const startInterview = async () => {
     try {
       setLoading(true);
-
       const res = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}api/subject-interview/start`,
-        { subject },
-        { withCredentials: true }
+        { subject }, { withCredentials: true }
       );
-
-      const { sessionId, currentQuestion } = res.data.data;
+      const { sessionId, currentQuestion, totalQuestions: total } = res.data.data;
+      const timeLimit = currentQuestion.timeLimit || 120;
 
       setSessionId(sessionId);
       setQuestion(currentQuestion.text);
       setInterviewStarted(true);
+      setQuestionTimeLimit(timeLimit);
+      setTotalQuestions(total);
+      setQuestionIndex(0);
 
-      if (!manualMode) {
-        speakQuestion(currentQuestion.text, () => {
-          startSpeechRecognition();
-        });
-      }
+      speakQuestion(currentQuestion.text, () => {
+        startTimer(timeLimit);
+        startSpeechRecognition();
+      });
     } catch (err) {
       console.error(err);
       alert("Failed to start subject interview");
@@ -119,61 +190,78 @@ const SubjectWiseInterviewRoom = () => {
     }
   };
 
-  /* ================= SUBMIT SUBJECT ANSWER ================= */
-  const submitAnswer = async () => {
+  /* ════════════════════════════════════════
+     COMPLETE INTERVIEW
+  ════════════════════════════════════════ */
+  const completeInterview = () => {
+    stopTimer();
+    stopSpeechRecognition();
+    window.speechSynthesis?.cancel();
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    navigate(`/subject-score/${sessionId}`);
+  };
+
+  /* ════════════════════════════════════════
+     SUBMIT ANSWER
+  ════════════════════════════════════════ */
+  const submitAnswer = async (autoSubmit = false) => {
     try {
       setLoading(true);
+      stopTimer();
       stopSpeechRecognition();
+
+      const answer = autoSubmit && !answerText.trim()
+        ? "[No answer - time expired]"
+        : answerText;
 
       const res = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}api/subject-interview/${sessionId}/submit-answer`,
-        { answer: answerText },
-        { withCredentials: true }
+        { answer }, { withCredentials: true }
       );
-
-    const { nextQuestion, hasMoreQuestions } = res.data;
-
-    if (hasMoreQuestions && nextQuestion) {
-      // prepare for next question
-      setAnswerText("");
-      resetTranscript();
-      setQuestion(nextQuestion.text);
-
-      if (!manualMode) {
-        speakQuestion(nextQuestion.text, () => startSpeechRecognition());
+      const { nextQuestion, hasMoreQuestions } = res.data;
+      if (hasMoreQuestions && nextQuestion) {
+        const nextLimit = nextQuestion.timeLimit || 120;
+        setAnswerText("");
+        resetTranscript();
+        setQuestion(nextQuestion.text);
+        setQuestionTimeLimit(nextLimit);
+        setQuestionIndex((prev) => prev + 1);
+        speakQuestion(nextQuestion.text, () => {
+          startTimer(nextLimit);
+          startSpeechRecognition();
+        });
+      } else {
+        completeInterview();
       }
-    } else {
-      navigate(`/subject-score/${sessionId}`);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to submit answer");
+    } finally {
+      setLoading(false);
     }
-        } catch (err) {
-          console.error(err);
-          alert("Failed to submit answer");
-        } finally {
-          setLoading(false);
-        }
   };
 
-  /* ================= PROCTORING ================= */
+  /* ════════════════════════════════════════
+     EARLY SUBMIT
+  ════════════════════════════════════════ */
+  const confirmEarlySubmit = () => {
+    setShowSubmitModal(false);
+    completeInterview();
+  };
+
+  /* ════════════════════════════════════════
+     PROCTORING
+  ════════════════════════════════════════ */
   useEffect(() => {
     if (!interviewStarted) return;
-
     const handleVisibilityChange = () => {
-      if (document.hidden) {
-        setWarningMessage("⚠️ Tab switching is not allowed.");
-        setShowWarning(true);
-        reportProctoringEvent("tab_switch", "medium");
-      }
+      if (document.hidden) { setWarningMessage("⚠️ Tab switching is not allowed."); setShowWarning(true); reportProctoringEvent("tab_switch", "medium"); }
     };
-
     const handleBlur = () => {
-      setWarningMessage("⚠️ Window lost focus.");
-      setShowWarning(true);
-      reportProctoringEvent("tab_switch", "medium");
+      setWarningMessage("⚠️ Window lost focus."); setShowWarning(true); reportProctoringEvent("tab_switch", "medium");
     };
-
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("blur", handleBlur);
-
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("blur", handleBlur);
@@ -184,112 +272,281 @@ const SubjectWiseInterviewRoom = () => {
     try {
       await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}api/interview/${sessionId}/proctoring`,
-        { eventType, severity },
-        { withCredentials: true }
+        { eventType, severity }, { withCredentials: true }
       );
-    } catch (err) {
-      console.error("Proctoring error:", err);
-    }
+    } catch (err) { console.error("Proctoring error:", err); }
   };
 
+  /* ════════════════════════════════════════
+     GATE SCREEN
+  ════════════════════════════════════════ */
+  if (!interviewStarted && permStage !== "granted") {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 p-4 sm:p-6 min-h-[90vh]" style={{ background: "#0f1117" }}>
 
-  /* ================= UI ================= */
-  return (
-    <div className="grid grid-cols-3 gap-6 p-6 bg-gray-100 min-h-[90vh]">
-      <div className="col-span-1 bg-black rounded-xl overflow-hidden">
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          className="w-full h-full object-cover"
-        />
-      </div>
-
-      <div className="col-span-2 bg-white rounded-xl shadow p-6 space-y-5">
-        <div className="text-lg font-semibold">
-          {question || "Click Start Subject Interview"}
+        <div className="sm:col-span-1 rounded-xl overflow-hidden relative min-h-[220px] sm:min-h-0" style={{ background: "#111827", border: "1px solid #1f2937" }}>
+          <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" style={{ transform: "scaleX(-1)" }} />
+          <canvas ref={canvasRef} className="hidden" />
+          {permStage !== "granted" && (
+            <div className="absolute inset-0 flex items-center justify-center text-sm" style={{ color: "#4b5563" }}>
+              Camera preview
+            </div>
+          )}
+          {permStage === "granted" && (
+            <div className={`absolute bottom-3 left-3 right-3 text-xs text-center py-2 rounded-lg font-semibold ${faceDetected ? "bg-green-900/80 text-green-300 border border-green-700" : "bg-red-900/80 text-red-300 border border-red-700"}`}>
+              {faceDetected ? "✓ Face detected" : "⚠ No face — sit in front of camera"}
+            </div>
+          )}
         </div>
 
-        <button
-          onClick={() => {
-            stopSpeechRecognition();
-            resetTranscript();
-            setManualMode((prev) => !prev);
-          }}
-          className="bg-gray-600 text-white px-4 py-2 rounded-lg"
-        >
-          {manualMode ? "Switch to Speech Mode" : "Switch to Manual Mode"}
-        </button>
+        <div className="sm:col-span-2 rounded-xl p-5 sm:p-6 space-y-5" style={{ background: "#111827", border: "1px solid #1f2937" }}>
+          <div>
+            <div className="text-lg font-semibold mb-1" style={{ color: "#f9fafb" }}>
+              Verify your setup before starting
+            </div>
+            {subject && (
+              <span className="text-xs font-semibold px-2 py-0.5 rounded" style={{ background: "#1e3a5f", color: "#93c5fd" }}>
+                {subject}
+              </span>
+            )}
+          </div>
+          <p className="text-sm" style={{ color: "#9ca3af" }}>
+            Camera access, microphone, and a visible face are all required to begin the interview.
+          </p>
+          <div className="space-y-3">
+            <CheckRow label="Camera access" status={permStage === "idle" ? "idle" : cameraReady ? "ok" : "fail"} />
+            <CheckRow label="Microphone access" status={permStage === "idle" ? "idle" : micReady ? "ok" : "fail"} />
+            <CheckRow label="Face visible in camera" status={permStage !== "granted" ? "idle" : faceDetected ? "ok" : "fail"} />
+          </div>
+          {permStage === "denied" && (
+            <div className="text-sm rounded-lg p-3" style={{ background: "#1f0a0a", border: "1px solid #7f1d1d", color: "#fca5a5" }}>
+              Access denied. Allow camera & microphone in your browser settings and reload.
+            </div>
+          )}
+          <div className="flex gap-4 justify-end flex-wrap">
+            {(permStage === "idle" || permStage === "denied") && (
+              <button onClick={requestPermissions} className="px-5 py-2 rounded-lg font-semibold text-sm text-white" style={{ background: "#2563eb" }}>
+                Allow Camera & Microphone
+              </button>
+            )}
+            {permStage === "requesting" && (
+              <button disabled className="px-5 py-2 rounded-lg text-sm cursor-not-allowed" style={{ background: "#374151", color: "#6b7280" }}>
+                Requesting…
+              </button>
+            )}
+            {permStage === "granted" && (
+              <button
+                onClick={startInterview}
+                disabled={!canBegin || loading}
+                className="px-5 py-2 rounded-lg font-semibold text-sm transition-colors"
+                style={{
+                  background: canBegin && !loading ? "#2563eb" : "#1f2937",
+                  color: canBegin && !loading ? "#fff" : "#4b5563",
+                  cursor: canBegin && !loading ? "pointer" : "not-allowed",
+                }}
+              >
+                {loading ? "Starting…" : !faceDetected ? "Waiting for face…" : "Begin Interview"}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
+  /* ════════════════════════════════════════
+     MAIN INTERVIEW UI
+  ════════════════════════════════════════ */
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 p-4 sm:p-6 min-h-[90vh]" style={{ background: "#0f1117" }}>
+
+      {/* Camera */}
+      <div className="sm:col-span-1 rounded-xl overflow-hidden relative min-h-[200px] sm:min-h-0" style={{ background: "#111827", border: "1px solid #1f2937" }}>
+        <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" style={{ transform: "scaleX(-1)" }} />
+        <canvas ref={canvasRef} className="hidden" />
+
+        <div className="absolute top-3 left-3 flex items-center gap-1.5 rounded px-2 py-1" style={{ background: "rgba(0,0,0,0.6)" }}>
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+          <span className="text-xs font-semibold" style={{ color: "#f87171" }}>LIVE</span>
+        </div>
+
+        <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded px-2 py-1" style={{ background: "rgba(0,0,0,0.6)" }}>
+          <span className={`w-1.5 h-1.5 rounded-full ${listening ? "bg-green-400 animate-pulse" : "bg-gray-600"}`} />
+          <span className="text-xs font-semibold" style={{ color: listening ? "#86efac" : "#6b7280" }}>
+            {listening ? "MIC ON" : "MIC OFF"}
+          </span>
+        </div>
+
+        <div className={`absolute bottom-3 left-3 right-3 text-xs text-center py-1.5 rounded-lg font-semibold ${faceDetected ? "bg-green-900/80 text-green-300 border border-green-700" : "bg-red-900/80 text-red-300 border border-red-700"}`}>
+          {faceDetected ? "✓ Face detected" : "⚠ Face not visible"}
+        </div>
+      </div>
+
+      {/* Answer panel */}
+      <div className="sm:col-span-2 rounded-xl p-5 sm:p-6 space-y-5" style={{ background: "#111827", border: "1px solid #1f2937" }}>
+
+        {/* Timer row + Submit Interview */}
+        {interviewStarted && (
+          <>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex items-center gap-2 px-3 py-1 rounded-full border text-sm font-bold"
+                  style={{ color: timerColor, borderColor: timerColor + "66", background: timerColor + "11" }}
+                >
+                  <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: timerColor }} />
+                  {formatTime(timeLeft)}
+                </div>
+                <span className="text-xs" style={{ color: "#6b7280" }}>
+                  Question {questionIndex + 1} / {totalQuestions}
+                </span>
+                {subject && (
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded" style={{ background: "#1e3a5f", color: "#93c5fd" }}>
+                    {subject}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => setShowSubmitModal(true)}
+                className="text-xs font-semibold px-4 py-1.5 rounded-lg transition-colors"
+                style={{ border: "1px solid #7f1d1d", color: "#f87171", background: "#1f0a0a" }}
+              >
+                Submit Interview
+              </button>
+            </div>
+
+            {/* Timer progress bar */}
+            <div className="w-full h-1.5 rounded-full overflow-hidden -mt-2" style={{ background: "#1f2937" }}>
+              <div
+                className="h-full rounded-full transition-all duration-1000"
+                style={{ width: `${timerPct}%`, background: timerColor }}
+              />
+            </div>
+          </>
+        )}
+
+        {/* Question */}
+        <div className="text-lg font-semibold" style={{ color: "#f9fafb" }}>
+          {question || "Click Begin Interview"}
+        </div>
+
+        {/* TTS replay */}
+        {interviewStarted && (
+          <button
+            onClick={() => speakQuestion(question)}
+            disabled={isSpeaking}
+            className="text-xs underline disabled:opacity-40 transition-colors"
+            style={{ color: "#6b7280" }}
+          >
+            {isSpeaking ? "🔊 Speaking…" : "🔊 Replay question audio"}
+          </button>
+        )}
+
+        {/* Textarea */}
         <textarea
           value={answerText}
-          onChange={(e) => manualMode && setAnswerText(e.target.value)}
-          readOnly={!manualMode}
-          className="w-full h-40 border rounded-lg p-4"
-          placeholder={
-            manualMode
-              ? "Type your answer..."
-              : "Your spoken answer will appear here..."
-          }
+          onChange={(e) => setAnswerText(e.target.value)}
+          className="w-full h-40 rounded-lg p-4 text-sm resize-none outline-none"
+          style={{ background: "#0f1117", border: "1px solid #1f2937", color: "#f9fafb" }}
+          placeholder="Your spoken answer will appear here..."
         />
 
+        {/* Buttons */}
         <div className="flex gap-4 justify-end">
           {!interviewStarted && (
             <button
               onClick={startInterview}
               disabled={loading}
-              className="bg-sky-600 text-white px-5 py-2 rounded-lg"
+              className="px-5 py-2 rounded-lg text-sm font-semibold text-white"
+              style={{ background: "#2563eb" }}
             >
-              Start Interview
+              {loading ? "Starting…" : "Begin Interview"}
             </button>
-          )}
-
-          {interviewStarted && !manualMode && (
-            !listening ? (
-              <button
-                onClick={startSpeechRecognition}
-                className="bg-green-600 text-white px-5 py-2 rounded-lg"
-              >
-                Start Speaking
-              </button>
-            ) : (
-              <button
-                onClick={stopSpeechRecognition}
-                className="bg-red-600 text-white px-5 py-2 rounded-lg"
-              >
-                Stop Speaking
-              </button>
-            )
           )}
 
           {interviewStarted && (
             <button
-              onClick={submitAnswer}
+              onClick={() => submitAnswer(false)}
               disabled={loading || !answerText}
-              className="bg-blue-600 text-white px-5 py-2 rounded-lg"
+              className="px-5 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
+              style={{
+                background: loading || !answerText ? "#1f2937" : "#2563eb",
+                color: loading || !answerText ? "#4b5563" : "#fff",
+                cursor: loading || !answerText ? "not-allowed" : "pointer",
+              }}
             >
-              Submit Answer
+              {loading ? "Submitting…" : questionIndex + 1 === totalQuestions ? "Submit Final Answer" : "Submit Answer"}
             </button>
           )}
         </div>
       </div>
 
+      {/* Submit Interview Modal */}
+      {showSubmitModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: "rgba(0,0,0,0.7)" }}>
+          <div className="p-6 rounded-xl w-11/12 max-w-sm text-center" style={{ background: "#111827", border: "1px solid #1f2937" }}>
+            <h2 className="text-base font-semibold mb-2" style={{ color: "#f9fafb" }}>Submit Interview Early?</h2>
+            <p className="text-sm mb-1" style={{ color: "#9ca3af" }}>
+              You're on question <strong style={{ color: "#f9fafb" }}>{questionIndex + 1}</strong> of{" "}
+              <strong style={{ color: "#f9fafb" }}>{totalQuestions}</strong>.
+            </p>
+            {totalQuestions - questionIndex - 1 > 0 && (
+              <p className="text-sm font-medium mb-3" style={{ color: "#f59e0b" }}>
+                {totalQuestions - questionIndex - 1} question(s) will be left unanswered.
+              </p>
+            )}
+            <p className="text-xs mb-5" style={{ color: "#6b7280" }}>This cannot be undone.</p>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => setShowSubmitModal(false)}
+                className="px-5 py-2 rounded-lg text-sm font-semibold"
+                style={{ border: "1px solid #374151", color: "#9ca3af", background: "transparent" }}
+              >
+                Continue Interview
+              </button>
+              <button
+                onClick={confirmEarlySubmit}
+                className="px-5 py-2 rounded-lg text-sm font-semibold text-white"
+                style={{ background: "#dc2626" }}
+              >
+                Yes, Submit Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Proctoring Warning Modal */}
       {showWarning && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg w-96 text-center">
-            <h2 className="text-lg font-semibold text-red-600 mb-3">
-              Proctoring Warning
-            </h2>
-            <p className="mb-4">{warningMessage}</p>
-            <button
-              onClick={() => setShowWarning(false)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-            >
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: "rgba(0,0,0,0.7)" }}>
+          <div className="p-6 rounded-xl w-11/12 max-w-sm text-center" style={{ background: "#111827", border: "1px solid #7f1d1d" }}>
+            <h2 className="text-base font-semibold mb-3" style={{ color: "#f87171" }}>Proctoring Warning</h2>
+            <p className="mb-5 text-sm" style={{ color: "#d1d5db" }}>{warningMessage}</p>
+            <button onClick={() => setShowWarning(false)} className="px-6 py-2 rounded-lg text-sm font-semibold text-white" style={{ background: "#1d4ed8" }}>
               I Understand
             </button>
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
+/* ── CheckRow ── */
+const CheckRow = ({ label, status }) => {
+  const cfg = {
+    ok:   { dot: "#22c55e", shadow: "0 0 6px #22c55e", badgeBg: "#052e16", badgeBorder: "#166534", badgeText: "#86efac", bLabel: "✓ Ready" },
+    fail: { dot: "#ef4444", shadow: "none",             badgeBg: "#1f0a0a", badgeBorder: "#7f1d1d", badgeText: "#fca5a5", bLabel: "✗ Not detected" },
+    idle: { dot: "#374151", shadow: "none",             badgeBg: "#111827", badgeBorder: "#1f2937", badgeText: "#6b7280", bLabel: "Waiting…" },
+  };
+  const c = cfg[status];
+  return (
+    <div className="flex items-center gap-3 rounded-lg px-4 py-3" style={{ background: "#0f1117", border: "1px solid #1f2937" }}>
+      <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: c.dot, boxShadow: c.shadow }} />
+      <span className="text-sm flex-1" style={{ color: "#d1d5db" }}>{label}</span>
+      <span className="text-xs px-2 py-0.5 rounded border font-medium" style={{ background: c.badgeBg, borderColor: c.badgeBorder, color: c.badgeText }}>
+        {c.bLabel}
+      </span>
     </div>
   );
 };

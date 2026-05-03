@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from "react";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 const signupSchema = z.object({
   fname: z.string().min(3, "First Name should contain at least 3 characters"),
   lname: z.string().min(3, "Last Name should contain at least 3 characters"),
@@ -28,7 +29,7 @@ function Register() {
   });
 
   const navigate = useNavigate();
-
+    const [showPassword, setShowPassword] = useState(false);
   const onSubmit = async (data) => {
     const userData = {
       firstName: data.fname,
@@ -135,12 +136,20 @@ function Register() {
               {/* Password */}
               <div className="space-y-2">
                 <label className="block text-sky-600 font-medium">PASSWORD</label>
-                <input
-                  {...register('password')}
-                  type="password"
-                  placeholder="Create a password"
-                  className="w-full px-3 py-2 border border-sky-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-                />
+                <div className="relative"> {/* ✅ wrapper needed for absolute positioning */}
+                  <input
+                    {...register('password')}
+                    type={showPassword ? "text" : "password"} 
+                    placeholder="Create a password"
+                    className="w-full px-3 py-2 pr-10 border border-sky-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  />
+                  <span
+                    className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-600" 
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </span>
+                </div>
                 {errors.password && (
                   <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
                 )}

@@ -136,7 +136,7 @@ export const getMatchedJobs = async (req, res) => {
 
     matchScore: Number(finalScore.toFixed(2)),
 
-    canApply: finalScore >= 50
+    canApply: finalScore >= 40
   });
 }
 
