@@ -41,9 +41,20 @@ const answerEvaluationSchema = new mongoose.Schema({
 const proctoringEventSchema = new mongoose.Schema({
   timestamp: Date,
   eventType: {
-    type: String,
-    enum: ['background_change', 'multiple_faces', 'noise_detected', 'tab_switch', 'mobile_usage', 'voice_absent']
-  },
+  type: String,
+  enum: [
+    'background_change',
+    'multiple_faces',
+    'noise_detected',
+    'tab_switch',
+    'mobile_usage',
+    'voice_absent',
+    'face_absence',       // ← new
+    'look_away',          // ← new
+    'face_inconsistency', // ← new
+    'object_detected'     // ← new
+  ]
+},
   severity: { type: String, enum: ['low', 'medium', 'high'] },
   details: {
   type: mongoose.Schema.Types.Mixed
@@ -96,13 +107,17 @@ const interviewSessionSchema = new mongoose.Schema({
     // Enhanced proctoring
     proctoringEvents: [proctoringEventSchema],
     proctoringSummary: {
-      backgroundChanges: { type: Number, default: 0 },
-      multipleFacesDetected: { type: Number, default: 0 },
-      highNoiseLevels: { type: Number, default: 0 },
-      suspiciousActivities: { type: Number, default: 0 },
-      tabSwitches: { type: Number, default: 0 },
-      overallRisk: { type: String, enum: ['low', 'medium', 'high'], default: 'low' }
-    },
+  backgroundChanges:    { type: Number, default: 0 },
+  multipleFacesDetected:{ type: Number, default: 0 },
+  highNoiseLevels:      { type: Number, default: 0 },
+  suspiciousActivities: { type: Number, default: 0 },
+  tabSwitches:          { type: Number, default: 0 },
+  faceAbsences:         { type: Number, default: 0 }, // ← new
+  lookAways:            { type: Number, default: 0 }, // ← new
+  faceSwaps:            { type: Number, default: 0 }, // ← new
+  objectsDetected:      { type: Number, default: 0 }, // ← new
+  overallRisk: { type: String, enum: ['low', 'medium', 'high'], default: 'low' }
+},
     // Interview settings
     interviewType: {
       type: String,
@@ -110,13 +125,13 @@ const interviewSessionSchema = new mongoose.Schema({
       default: 'mixed'
     },
     totalQuestions: { type: Number, default: 5 },
-    // Analytics
-    performance: {
-      technicalScore: Number,
-      behavioralScore: Number,
-      communicationScore: Number,
-      timeManagementScore: Number
-    }
+    // // Analytics
+    // performance: {
+    //   technicalScore: Number,
+    //   behavioralScore: Number,
+    //   communicationScore: Number,
+    //   timeManagementScore: Number
+    // }
   }, { 
     timestamps: true,
     toJSON: { virtuals: true },

@@ -310,20 +310,37 @@ export const addProctoringEvent = async (req, res) => {
       details
     });
 
-    switch (eventType) {
-      case 'background_change':
-        session.proctoringSummary.backgroundChanges += 1;
-        break;
-      case 'multiple_faces':
-        session.proctoringSummary.multipleFacesDetected += 1;
-        break;
-      case 'noise_detected':
-        session.proctoringSummary.highNoiseLevels += 1;
-        break;
-      case 'tab_switch':
-        session.proctoringSummary.tabSwitches += 1;
-        break;
-    }
+    // ADD these 4 cases to the existing switch:
+switch (eventType) {
+  case 'background_change':
+    session.proctoringSummary.backgroundChanges += 1;
+    break;
+  case 'multiple_faces':
+    session.proctoringSummary.multipleFacesDetected += 1;
+    break;
+  case 'noise_detected':
+    session.proctoringSummary.highNoiseLevels += 1;
+    break;
+  case 'tab_switch':
+    session.proctoringSummary.tabSwitches += 1;
+    break;
+  case 'face_absence':                                    // ← new
+    session.proctoringSummary.faceAbsences =
+      (session.proctoringSummary.faceAbsences || 0) + 1;
+    break;
+  case 'look_away':                                       // ← new
+    session.proctoringSummary.lookAways =
+      (session.proctoringSummary.lookAways || 0) + 1;
+    break;
+  case 'face_inconsistency':                              // ← new
+    session.proctoringSummary.faceSwaps =
+      (session.proctoringSummary.faceSwaps || 0) + 1;
+    break;
+  case 'object_detected':                                 // ← new
+    session.proctoringSummary.objectsDetected =
+      (session.proctoringSummary.objectsDetected || 0) + 1;
+    break;
+}
 
     const totalEvents = session.proctoringEvents.length;
     const highSeverityEvents = session.proctoringEvents.filter(e => e.severity === 'high').length;
