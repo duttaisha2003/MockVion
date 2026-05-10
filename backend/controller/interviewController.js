@@ -297,76 +297,56 @@ export const addProctoringEvent = async (req, res) => {
 
     const session = await InterviewSession.findById(sessionId);
     if (!session) {
-      return res.status(404).json({
-        success: false,
-        message: "Session not found"
-      });
+      return res.status(404).json({ success: false, message: "Session not found" });
     }
 
-    session.proctoringEvents.push({
-      timestamp: new Date(),
-      eventType,
-      severity,
-      details
-    });
+    // ── NO proctoringEvents.push() — summary only ──
+    switch (eventType) {
+      case 'background_change':
+        session.proctoringSummary.backgroundChanges += 1;
+        break;
+      case 'multiple_faces':
+        session.proctoringSummary.multipleFacesDetected += 1;
+        break;
+      case 'noise_detected':
+        session.proctoringSummary.highNoiseLevels += 1;
+        break;
+      case 'tab_switch':
+        session.proctoringSummary.tabSwitches += 1;
+        break;
+      case 'face_absence':
+        session.proctoringSummary.faceAbsences += 1;
+        break;
+      case 'look_away':
+        session.proctoringSummary.lookAways += 1;
+        break;
+      case 'face_inconsistency':
+        session.proctoringSummary.faceSwaps += 1;
+        break;
+      case 'object_detected':
+        session.proctoringSummary.objectsDetected += 1;
+        break;
+    }
 
-    // ADD these 4 cases to the existing switch:
-switch (eventType) {
-  case 'background_change':
-    session.proctoringSummary.backgroundChanges += 1;
-    break;
-  case 'multiple_faces':
-    session.proctoringSummary.multipleFacesDetected += 1;
-    break;
-  case 'noise_detected':
-    session.proctoringSummary.highNoiseLevels += 1;
-    break;
-  case 'tab_switch':
-    session.proctoringSummary.tabSwitches += 1;
-    break;
-  case 'face_absence':                                    // ← new
-    session.proctoringSummary.faceAbsences =
-      (session.proctoringSummary.faceAbsences || 0) + 1;
-    break;
-  case 'look_away':                                       // ← new
-    session.proctoringSummary.lookAways =
-      (session.proctoringSummary.lookAways || 0) + 1;
-    break;
-  case 'face_inconsistency':                              // ← new
-    session.proctoringSummary.faceSwaps =
-      (session.proctoringSummary.faceSwaps || 0) + 1;
-    break;
-  case 'object_detected':                                 // ← new
-    session.proctoringSummary.objectsDetected =
-      (session.proctoringSummary.objectsDetected || 0) + 1;
-    break;
-}
+    // Risk based on summary totals, not events array
+    const s = session.proctoringSummary;
+    const highCount = s.faceAbsences + s.multipleFacesDetected + s.faceSwaps + s.objectsDetected;
+    const medCount  = s.lookAways + s.tabSwitches + s.backgroundChanges;
 
-    const totalEvents = session.proctoringEvents.length;
-    const highSeverityEvents = session.proctoringEvents.filter(e => e.severity === 'high').length;
-    
-    if (highSeverityEvents > 3) {
+    if (highCount > 5) {
       session.proctoringSummary.overallRisk = 'high';
-    } else if (highSeverityEvents > 1 || totalEvents > 5) {
+    } else if (highCount > 2 || medCount > 8) {
       session.proctoringSummary.overallRisk = 'medium';
     }
 
     await session.save();
-
-    res.json({
-      success: true,
-      message: "Proctoring event recorded"
-    });
+    res.json({ success: true, message: "Proctoring event recorded" });
 
   } catch (error) {
     console.error("Proctoring Error:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message || "Failed to record proctoring event"
-    });
+    res.status(500).json({ success: false, message: error.message || "Failed to record proctoring event" });
   }
 };
-
 
 export const completeInterview = async (req, res) => {
   try {

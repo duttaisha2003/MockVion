@@ -105,7 +105,7 @@ const interviewSessionSchema = new mongoose.Schema({
       disconnectedAt: Date
     },
     // Enhanced proctoring
-    proctoringEvents: [proctoringEventSchema],
+    // proctoringEvents: [proctoringEventSchema],
     proctoringSummary: {
   backgroundChanges:    { type: Number, default: 0 },
   multipleFacesDetected:{ type: Number, default: 0 },

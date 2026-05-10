@@ -17,6 +17,7 @@
     "@vladmandic/face-api": "^1.7.15",
     "assemblyai": "^4.32.1",
     "axios": "^1.16.0",
+    "face-api.js": "^0.22.2",
     "hark": "^1.2.3",
     "lucide-react": "^0.563.0",
     "react": "^19.2.0",
