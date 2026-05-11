@@ -3,40 +3,25 @@ import mongoose from "mongoose";
 
 const parsedResumeSchema = new mongoose.Schema(
   {
-   user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-    unique: true  
-  },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      unique: true
+    },
     name: String,
     email: String,
     phone: String,
     skills: [String],
-    projects: [
-      {
-        title: String,
-        description: String,
-        techStack: String,
-        duration: String
-      }
-    ],
-    achievements: [
-      {
-        title: String,
-        description: String
-      }
-    ],
+    projects: [{ title: String, description: String, techStack: String, duration: String }],
+    achievements: [{ title: String, description: String }],
     hobbies: [String],
-    experience: [
-      {
-        role: String,
-        company: String,
-        duration: String,
-        description: String
-      }
-    ],
-    rawText: String
+    experience: [{ role: String, company: String, duration: String, description: String }],
+    rawText: String,
+    totalExperience: {
+      months: { type: Number, default: 0 },  
+      text:   { type: String, default: "Fresher" } 
+    }
   },
   { timestamps: true }
 );

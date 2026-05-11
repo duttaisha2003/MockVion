@@ -5,44 +5,80 @@ const groq = new Groq({
 });
 export async function enhanceResumeWithAI({ rawText, parsedData }) {
   try {
+    // const prompt = `
+    //   You are an advanced resume parsing AI.
+
+    //   INPUT:
+    //   1. Raw resume text
+    //   2. Parsed JSON (may be incomplete or incorrect)
+
+    //   TASK:
+    //   - Fix and improve the JSON
+    //   - Extract missing:
+    //     name, email, phone
+    //   - Improve:
+    //     skills (add missing, remove duplicates)
+    //   - Extract structured:
+    //     projects (title + description)
+    //     experience (role, company, duration, description)
+    //     achievements (title + description)
+    //     hobbies
+
+    //   RULES:
+    //   - Return ONLY valid JSON
+    //   - No explanation
+    //   - Do not add any skill from your own suggestion.
+    //   - Keep format clean and consistent
+    //   - achievements must be:
+    //     [{ "title": "", "description": "" }]
+    //   - experience duration MUST follow this exact format:
+    //     "Mon YYYY – Mon YYYY" or "Mon YYYY – Present"
+    //     Examples: "Aug 2025 – Present", "Jan 2024 – Jun 2025"
+    //     Never use abbreviations like "Aug'25" or just "2025".
+
+    //   RAW TEXT:
+    //   ${rawText}
+
+    //   PARSED JSON:
+    //   ${JSON.stringify(parsedData)}
+    //   `;
     const prompt = `
-You are an advanced resume parsing AI.
+      You are an advanced resume parsing AI.
 
-INPUT:
-1. Raw resume text
-2. Parsed JSON (may be incomplete or incorrect)
+      INPUT:
+      1. Raw resume text
+      2. Parsed JSON (may be incomplete or incorrect)
 
-TASK:
-- Fix and improve the JSON
-- Extract missing:
-  name, email, phone
-- Improve:
-  skills (add missing, remove duplicates)
-- Extract structured:
-  projects (title + description)
-  experience (role, company, duration, description)
-  achievements (title + description)
-  hobbies
+      TASK:
+      - Fix and improve the JSON
+      - Extract missing:
+        name, email, phone
+      - Improve:
+        skills (add missing, remove duplicates)
+      - Extract structured:
+        projects (title + description)
+        experience (role, company, duration, description)
+        achievements (title + description)
+        hobbies
 
-RULES:
-- Return ONLY valid JSON
-- No explanation
-- No add any skill from your suggestion.
-- Keep format clean and consistent
-- achievements must be:
-[
-  {
-    "title": "",
-    "description": ""
-  }
-]
-RAW TEXT:
-${rawText}
+      RULES:
+      - Return ONLY valid JSON
+      - No explanation
+      - Do not add any skill from your own suggestion.
+      - Keep format clean and consistent
+      - achievements must be:
+        [{ "title": "", "description": "" }]
+      - experience duration MUST follow this exact format:
+        "Mon YYYY – Mon YYYY" or "Mon YYYY – Present"
+        Examples: "Aug 2025 – Present", "Jan 2024 – Jun 2025"
+        Never use abbreviations like "Aug'25" or just "2025".
 
-PARSED JSON:
-${JSON.stringify(parsedData)}
-`;
+      RAW TEXT:
+      ${rawText}
 
+      PARSED JSON:
+      ${JSON.stringify(parsedData)}
+      `;
     const response = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [{ role: "user", content: prompt }],

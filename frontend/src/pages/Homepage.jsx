@@ -210,12 +210,20 @@ const HomePage = () => {
             {/* CTA buttons */}
             <div className="flex flex-wrap gap-4 ">
               <Link
-                to="/interviewstage"
+                to={resumeExists ? "/interviewstage" : "#"}
+                onClick={(e) => {
+                  if (!resumeExists) {
+                    e.preventDefault();
+                    alert("Please upload your resume first.");
+                  }
+                }}
                 className={`inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-sm
                             transition-all duration-200 shadow-lg
-                            ${resumeExists
-                              ? "bg-sky-500 hover:bg-sky-400 text-white shadow-sky-900/50"
-                              : "bg-slate-700 text-slate-400 cursor-not-allowed"}`}
+                            ${
+                              resumeExists
+                                ? "bg-sky-500 hover:bg-sky-400 text-white shadow-sky-900/50"
+                                : "bg-slate-700 text-slate-400 cursor-not-allowed"
+                            }`}
               >
                 Start Interview
               </Link>
@@ -319,7 +327,7 @@ const HomePage = () => {
                   <p className="text-slate-400 group-hover:text-sky-400 text-sm transition-colors">
                     {resumeFile
                       ? <span className="text-sky-400 font-medium">📄 {resumeFile.name}</span>
-                      : "Click to browse or drag & drop your PDF "}
+                      : "Click to browse your PDF "}
                   </p>
                 </div>
                 <input
