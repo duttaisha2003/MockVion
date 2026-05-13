@@ -3,6 +3,9 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { Edit, Eye, XCircle } from "lucide-react";
 
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const RecruiterManageJobs = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +46,7 @@ const RecruiterManageJobs = () => {
         )
       );
     } catch (err) {
-      alert("Failed to close job");
+      toast.error("Failed to close job");
     }
   };
 
@@ -54,6 +57,10 @@ const RecruiterManageJobs = () => {
   }
 
   return (
+    <>
+    <ToastContainer position="top-right" autoClose={2000}  hideProgressBar={false}  newestOnTop
+          closeOnClick  pauseOnHover  theme="colored"  toastStyle={{ borderRadius: '10px', fontSize: '14px' }}
+        />
     <div className="min-h-screen bg-transparent text-white px-6 py-12">
       <div className="max-w-7xl mx-auto">
 
@@ -154,6 +161,7 @@ const RecruiterManageJobs = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

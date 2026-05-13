@@ -3,6 +3,9 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { Edit, Eye, Trash2, Briefcase, Plus, AlertCircle } from "lucide-react";
 
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const RecruiterManageJobs = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +41,7 @@ const RecruiterManageJobs = () => {
       );
       setJobs((prev) => prev.filter((job) => job.jobId !== jobId));
     } catch (err) {
-      alert("Failed to delete job. Please try again.");
+      toast.error("Failed to delete job. Please try again.");
     } finally {
       setDeletingId(null);
     }
@@ -56,6 +59,10 @@ const RecruiterManageJobs = () => {
   }
 
   return (
+    <>
+    <ToastContainer position="top-right" autoClose={2000}  hideProgressBar={false}  newestOnTop
+          closeOnClick  pauseOnHover  theme="colored"  toastStyle={{ borderRadius: '10px', fontSize: '14px' }}
+        />
     <div className="min-h-screen bg-transparent text-white px-6 py-12">
       <div className="max-w-7xl mx-auto">
 
@@ -212,6 +219,7 @@ const RecruiterManageJobs = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

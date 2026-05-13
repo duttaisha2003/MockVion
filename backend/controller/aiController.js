@@ -6,9 +6,9 @@ const groq = new Groq({
 
 export const generateJobTemplate = async (req, res) => {
   try {
-    console.log("called")
+   // console.log("called")
     const { title ,level} = req.body;
-    console.log("called2",title)
+  //  console.log("called2",title)
     if (!title) {
       return res.status(400).json({
         message: "Job title is required"
@@ -72,8 +72,8 @@ Return ONLY JSON in this format:
 
     const cleaned = aiResponse.replace(/```json|```/g, "").trim();
 
-const data = JSON.parse(cleaned);
-    console.log(data)
+    const data = JSON.parse(cleaned);
+   // console.log(data)
     res.json(data);
 
   } catch (error) {

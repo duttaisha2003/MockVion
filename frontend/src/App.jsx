@@ -38,10 +38,15 @@ import RecruiterJobDetail from "./pages/Recruiter/RecruiterJobDetail";
 import RecruiterShortlisted from "./pages/Recruiter/RecruiterShortlisted";
 import RecruiterShortlistedCandidates from "./pages/Recruiter/RecruiterShortlistedcandidates";
 
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 function App() {
   return (
     <Router>
        <NebulaBackground />
+       <ToastContainer position="top-right" autoClose={2000}  hideProgressBar={false}  newestOnTop
+      closeOnClick  pauseOnHover  theme="colored"  toastStyle={{ borderRadius: '10px', fontSize: '14px' }}
+    />
       <div style={{ position: "relative", zIndex: 1 }}>
         <Routes>
           <Route element={<Layout />}>

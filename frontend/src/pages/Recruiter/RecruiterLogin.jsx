@@ -5,6 +5,10 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useRecruiterAuth } from "./RecruiterAuthContext";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 function RecruiterLogin(){
   const { ensureRecruiterLoaded } = useRecruiterAuth();
   const { register, handleSubmit } = useForm();
@@ -19,15 +23,20 @@ function RecruiterLogin(){
     );
 
     await ensureRecruiterLoaded();
-    console.log("hi")
-    navigate("/recruiter-homepage");
+   toast.success("Login successfully ! Redirecting...");
+   setTimeout(() => navigate("/recruiter-homepage"), 2000);
+  
 
   } catch (error) {
-    alert(error.response?.data?.message || "Login failed");
+    toast.error(error.response?.data?.message || "Login failed");
   }
 };
 
   return(
+   <>
+    <ToastContainer position="top-right" autoClose={2000}  hideProgressBar={false}  newestOnTop
+          closeOnClick  pauseOnHover  theme="colored"  toastStyle={{ borderRadius: '10px', fontSize: '14px' }}
+        />
     <div className="min-h-screen flex items-center justify-center bg-black px-4 py-8">
 
       <div className="flex w-full max-w-3xl bg-white rounded-xl overflow-hidden">
@@ -87,6 +96,7 @@ function RecruiterLogin(){
       </div>
 
     </div>
+   </>
   );
 }
 

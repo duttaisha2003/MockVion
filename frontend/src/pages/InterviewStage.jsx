@@ -2,6 +2,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const InterviewStage = () => {
   const navigate = useNavigate(); 
   const { jobId } = useParams(); 
@@ -37,10 +39,14 @@ const startInterview = async () => {
 
   } catch (err) {
     console.error(err);
-    alert(err.response?.data?.message || "Failed to start interview");
+    toast.error(err.response?.data?.message || "Failed to start interview");
   }
 };
   return (
+   <>
+    <ToastContainer position="top-right" autoClose={2000}  hideProgressBar={false}  newestOnTop
+      closeOnClick  pauseOnHover  theme="colored"  toastStyle={{ borderRadius: '10px', fontSize: '14px' }}
+    />
     <div className="min-h-[80vh] flex items-center justify-center bg-transparent">
       <div className="bg-gray-900 p-10 rounded-xl shadow-md max-w-xl text-center space-y-5">
         <h1 className="text-3xl font-bold text-white">
@@ -64,6 +70,7 @@ const startInterview = async () => {
         </button>
       </div>
     </div>
+   </>
   );
 };
 

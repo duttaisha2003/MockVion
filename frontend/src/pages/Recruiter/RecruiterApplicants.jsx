@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const RecruiterApplicants = () => {
   const [applicants, setApplicants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,7 +54,7 @@ const RecruiterApplicants = () => {
     }
   } catch (error) {
     console.log(error);
-    alert("Failed to shortlist candidate");
+    toast.error("Failed to shortlist candidate");
   } finally {
     setShortlisting((prev) => ({ ...prev, [applicationId]: false }));
   }
@@ -74,7 +77,7 @@ const handleReject = async (applicationId) => {
     }
   } catch (error) {
     console.log(error);
-    alert("Failed to reject candidate");
+    toast.error("Failed to reject candidate");
   } finally {
     setRejecting((prev) => ({ ...prev, [applicationId]: false }));
   }
@@ -93,6 +96,10 @@ const handleReject = async (applicationId) => {
     status?.toLowerCase() === "shortlisted" || status?.toLowerCase() === "rejected";
 
   return (
+    <>
+    <ToastContainer position="top-right" autoClose={2000}  hideProgressBar={false}  newestOnTop
+          closeOnClick  pauseOnHover  theme="colored"  toastStyle={{ borderRadius: '10px', fontSize: '14px' }}
+        />
     <div className="min-h-[calc(100vh-80px)] p-4 m-9 sm:p-6 bg-transparent text-white">
 
       {/* Header */}
@@ -245,6 +252,7 @@ const handleReject = async (applicationId) => {
         </div>
       )}
     </div>
+    </>
   );
 };
 

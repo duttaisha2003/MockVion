@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../AuthContext";
 import { useNavigate } from "react-router-dom";
 
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 function UpdateGetProfile() {
   const { user, loading, updateProfile } = useAuth();
   const navigate = useNavigate();
@@ -49,9 +51,11 @@ function UpdateGetProfile() {
     setSaving(false);
 
     if (result.success) {
-      navigate("/profile");
+      toast.success('Updated Data successfully! Redirecting...');
+      setTimeout(() => navigate('/profile'), 2000);
+     
     } else {
-      alert("Update failed");
+      toast.error("Update failed");
     }
   };
 
@@ -66,6 +70,10 @@ function UpdateGetProfile() {
   if (!user) return null;
 
   return (
+    <>
+    <ToastContainer position="top-right" autoClose={2000}  hideProgressBar={false}  newestOnTop
+      closeOnClick  pauseOnHover  theme="colored"  toastStyle={{ borderRadius: '10px', fontSize: '14px' }}
+    />
     <div className="min-h-screen bg-black flex justify-center items-center px-4">
       <div className="bg-gray-900 w-full max-w-3xl rounded-xl shadow-lg p-8">
         <form onSubmit={handleSubmit}>
@@ -166,6 +174,7 @@ function UpdateGetProfile() {
         </form>
       </div>
     </div>
+    </>
   );
 }
 

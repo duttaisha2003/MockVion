@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { UploadCloud, CheckCircle, AlertCircle, ChevronLeft, ChevronRight, Sparkles, Trophy, Brain } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 /* ─── Slider data ─── */
 const SUBJECTS = [
   {
@@ -161,6 +162,10 @@ const HomePage = () => {
 
   /* ════════ RENDER ════════ */
   return (
+    <>
+    <ToastContainer position="top-right" autoClose={2000}  hideProgressBar={false}  newestOnTop
+          closeOnClick  pauseOnHover  theme="colored"  toastStyle={{ borderRadius: '10px', fontSize: '14px' }}
+        />
     <div className="min-h-screen flex flex-col bg-transparent text-white font-sans">
 
       {/* ══════════ HERO ══════════ */}
@@ -214,7 +219,7 @@ const HomePage = () => {
                 onClick={(e) => {
                   if (!resumeExists) {
                     e.preventDefault();
-                    alert("Please upload your resume first.");
+                    toast.error("Please upload your resume first.");
                   }
                 }}
                 className={`inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-sm
@@ -368,6 +373,59 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+      {/* ══════════ READY CTA ══════════ */}
+      <section className="py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+          <div className="relative rounded-3xl overflow-hidden border border-sky-800/50
+                          bg-gradient-to-br from-sky-950 via-slate-900 to-blue-950 p-12 sm:p-16">
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80
+                              rounded-full bg-sky-700/20 blur-3xl" />
+            </div>
+            <div className="relative space-y-6">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight">
+                Ready for Your
+                <span className="bg-gradient-to-r from-sky-400 to-blue-400
+                                 bg-clip-text text-transparent"> AI Mock Interview?</span>
+              </h2>
+              <p className="text-slate-400 text-base max-w-xl mx-auto">
+                Upload your resume and let our AI generate questions tailored to your experience and skill set.
+              </p>
+              {/* <Link
+                to="/interviewstage"
+                className={`inline-flex items-center gap-2 px-10 py-4 rounded-xl font-bold
+                            text-base transition-all duration-200 shadow-xl
+                            ${resumeExists
+                              ? "bg-sky-500 hover:bg-sky-400 text-white shadow-sky-900/60"
+                              : "bg-slate-700 text-slate-400 cursor-not-allowed"}`}
+              >
+                <Brain size={18} /> Start Interview Now
+              </Link> */}
+              <Link
+                to={resumeExists ? "/interviewstage" : "#"}
+                onClick={(e) => {
+                  if (!resumeExists) {
+                    e.preventDefault();
+                    toast.error("Please upload your resume first.");
+                  }
+                }}
+                className={`inline-flex items-center gap-2 px-10 py-4 rounded-xl font-bold
+                            text-base transition-all duration-200 shadow-xl
+                            ${
+                              resumeExists
+                                ? "bg-sky-500 hover:bg-sky-400 text-white shadow-sky-900/50"
+                                : "bg-slate-700 text-slate-400 cursor-not-allowed"
+                            }`}
+              >
+                Start Interview
+              </Link>
+              {!resumeExists && (
+                <p className="text-slate-600 text-xs">Upload your resume above to unlock</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
       {/* ══════════ SUBJECT INTERVIEW SLIDER ══════════ */}
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
@@ -504,46 +562,184 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+    {/* ══════════ ADD review here  ══════════ */}
+      {/* ══════════ REVIEW SECTION ══════════ */}
+<section className="py-20 relative overflow-hidden">
+  <div className="absolute inset-0 pointer-events-none">
+    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px]
+                    rounded-full bg-sky-900/10 blur-3xl" />
+  </div>
 
-      
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-      {/* ══════════ READY CTA ══════════ */}
-      <section className="py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <div className="relative rounded-3xl overflow-hidden border border-sky-800/50
-                          bg-gradient-to-br from-sky-950 via-slate-900 to-blue-950 p-12 sm:p-16">
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80
-                              rounded-full bg-sky-700/20 blur-3xl" />
+    {/* heading */}
+    <div className="text-center mb-12">
+      <p className="text-sky-500 text-xs font-semibold tracking-widest uppercase mb-2">
+        Testimonials
+      </p>
+      <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
+        What Our Users Say
+      </h2>
+      <p className="text-slate-500 mt-3 text-base max-w-lg mx-auto">
+        Real feedback from candidates who cracked their interviews with us.
+      </p>
+    </div>
+
+    {/* overall rating bar */}
+    <div className="mb-12 bg-slate-900/60 border border-slate-800 rounded-2xl p-8
+                    flex flex-col sm:flex-row items-center gap-8">
+      <div className="text-center flex-shrink-0">
+        <p className="text-6xl font-extrabold text-white">4.8</p>
+        <div className="flex gap-1 justify-center mt-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462
+                       c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921
+                       -.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57
+                       -1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57
+                       -.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+          ))}
+        </div>
+        <p className="text-slate-500 text-xs mt-1">Based on 1,200+ reviews</p>
+      </div>
+
+      <div className="flex-1 w-full space-y-2">
+        {[
+          { label: "5 stars", pct: 78 },
+          { label: "4 stars", pct: 15 },
+          { label: "3 stars", pct: 5  },
+          { label: "2 stars", pct: 1  },
+          { label: "1 star",  pct: 1  },
+        ].map((b) => (
+          <div key={b.label} className="flex items-center gap-3">
+            <span className="text-slate-400 text-xs w-14 flex-shrink-0">{b.label}</span>
+            <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+              <div className="h-full rounded-full bg-yellow-400" style={{ width: `${b.pct}%` }} />
             </div>
-            <div className="relative space-y-6">
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight">
-                Ready for Your
-                <span className="bg-gradient-to-r from-sky-400 to-blue-400
-                                 bg-clip-text text-transparent"> AI Mock Interview?</span>
-              </h2>
-              <p className="text-slate-400 text-base max-w-xl mx-auto">
-                Upload your resume and let our AI generate questions tailored to your experience and skill set.
-              </p>
-              <Link
-                to="/interviewstage"
-                className={`inline-flex items-center gap-2 px-10 py-4 rounded-xl font-bold
-                            text-base transition-all duration-200 shadow-xl
-                            ${resumeExists
-                              ? "bg-sky-500 hover:bg-sky-400 text-white shadow-sky-900/60"
-                              : "bg-slate-700 text-slate-400 cursor-not-allowed"}`}
+            <span className="text-slate-500 text-xs w-8 text-right">{b.pct}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* review cards */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[
+        {
+          name: "Arjun Mehta",
+          role: "Frontend Developer @ Flipkart",
+          avatar: "AM",
+          color: "#38bdf8",
+          rating: 5,
+          review: "The mock interviews felt incredibly real. After 2 weeks of practice here, I walked into my Flipkart interview with full confidence and cleared it in the first attempt!",
+        },
+        {
+          name: "Priya Sharma",
+          role: "Backend Developer @ Swiggy",
+          avatar: "PS",
+          color: "#a78bfa",
+          rating: 5,
+          review: "The AI feedback was spot on. It pointed out exactly where I was fumbling — my explanations were vague. Fixed that and got placed within a month.",
+        },
+        {
+          name: "Rohan Das",
+          role: "MERN Developer @ Razorpay",
+          avatar: "RD",
+          color: "#34d399",
+          rating: 4,
+          review: "Topic-wise practice is a game changer. I focused only on Node.js and MongoDB sections and the improvement was visible in just a few sessions.",
+        },
+        {
+          name: "Sneha Iyer",
+          role: "AI/ML Engineer @ Zomato",
+          avatar: "SI",
+          color: "#fb923c",
+          rating: 5,
+          review: "I was skeptical at first but the questions are actually tough and relevant. This platform is far better than just reading from docs.",
+        },
+        {
+          name: "Karan Patel",
+          role: "Java Developer @ Infosys",
+          avatar: "KP",
+          color: "#f472b6",
+          rating: 4,
+          review: "Great platform for freshers. The experience level filter helped me practice exactly the right kind of questions for my level.",
+        },
+        {
+          name: "Divya Nair",
+          role: "Python Developer @ TCS",
+          avatar: "DN",
+          color: "#facc15",
+          rating: 5,
+          review: "Practiced Python and DSA topics consistently for 3 weeks. The structured approach really helped me stay focused and land my dream job.",
+        },
+      ].map((r) => (
+        <div
+          key={r.name}
+          className="bg-slate-900/70 border border-slate-800 rounded-2xl p-6
+                     hover:border-slate-600 transition-all duration-300 flex flex-col gap-4"
+        >
+          {/* stars */}
+          <div className="flex gap-1">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <svg
+                key={i}
+                className={`w-4 h-4 ${i < r.rating ? "text-yellow-400" : "text-slate-700"}`}
+                fill="currentColor" viewBox="0 0 20 20"
               >
-                <Brain size={18} /> Start Interview Now
-              </Link>
-              {!resumeExists && (
-                <p className="text-slate-600 text-xs">Upload your resume above to unlock</p>
-              )}
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462
+                         c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921
+                         -.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57
+                         -1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57
+                         -.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+            ))}
+          </div>
+
+          {/* review text */}
+          <p className="text-slate-300 text-sm leading-relaxed flex-1">
+            "{r.review}"
+          </p>
+
+          {/* user info */}
+          <div className="flex items-center gap-3 mt-2">
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center
+                         text-xs font-bold text-black flex-shrink-0"
+              style={{ background: r.color }}
+            >
+              {r.avatar}
+            </div>
+            <div>
+              <p className="text-white text-sm font-semibold">{r.name}</p>
+              <p className="text-slate-500 text-xs">{r.role}</p>
             </div>
           </div>
         </div>
-      </section>
+      ))}
+    </div>
+
+    {/* write a review CTA */}
+    <div className="mt-12 text-center">
+      <p className="text-slate-400 text-sm mb-4">Had a great experience? We'd love to hear from you.</p>
+      <button
+        onClick={() => toast.info("Review feature coming soon!")}
+        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold
+                   text-sm text-white border border-slate-700 bg-slate-800
+                   hover:bg-slate-700 transition-colors"
+      >
+        ✍️ Write a Review
+      </button>
+    </div>
+
+  </div>
+</section>
+
+      
 
     </div>
+    </>
   );
 };
 

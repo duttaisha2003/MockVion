@@ -3,8 +3,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 const signupSchema = z.object({
   fname: z.string().min(3, "First Name should contain at least 3 characters"),
   lname: z.string().min(3, "Last Name should contain at least 3 characters"),
@@ -50,20 +52,22 @@ function Register() {
       const result = await response.json();
 
       if (response.ok) {
-        console.log('User registered successfully');
-        navigate('/login');
+        toast.success('Registered successfully! Redirecting...');
+        setTimeout(() => navigate('/login'), 2000);
       } else {
-        console.error('Registration failed:', result.error);
-        alert(result.error || 'Registration failed');
+        toast.error(result.error || 'Registration failed');
       }
     } catch (error) {
       console.error('Error during registration:', error);
-      alert('Network error. Please try again.');
+     toast.error('Network error. Please try again.');
     }
   };
 
   return (
     <>
+    <ToastContainer position="top-right" autoClose={2000}  hideProgressBar={false}  newestOnTop
+      closeOnClick  pauseOnHover  theme="colored"  toastStyle={{ borderRadius: '10px', fontSize: '14px' }}
+    />
       <div className="min-h-screen flex items-center justify-center bg-black px-4 py-8">
         <div className="flex flex-col md:flex-row w-full max-w-5xl bg-white rounded-xl shadow-lg overflow-hidden">
           {/* Left panel - Form */}

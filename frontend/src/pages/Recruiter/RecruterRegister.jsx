@@ -2,6 +2,8 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 function RecruiterRegister() {
 
   const { register, handleSubmit } = useForm();
@@ -20,19 +22,23 @@ function RecruiterRegister() {
       const result = await res.json();
 
       if(res.ok){
-        alert("Registered successfully. Wait for admin approval.");
-        navigate("/recruiter-login");
+        toast.success("Registered successfully. Wait for admin approval.");
+        setTimeout(() => navigate('/recruiter-login'), 2000);
       }else{
-        alert(result.message);
+        toast.error(result.message);
       }
 
     } catch (error) {
       console.log(error);
-      alert("Something went wrong");
+      toast.error("Something went wrong");
     }
   };
 
   return (
+   <>
+    <ToastContainer position="top-right" autoClose={2000}  hideProgressBar={false}  newestOnTop
+          closeOnClick  pauseOnHover  theme="colored"  toastStyle={{ borderRadius: '10px', fontSize: '14px' }}
+        />
     <div className="min-h-screen flex items-center justify-center bg-black px-4 py-8">
       <div className="flex flex-col md:flex-row w-full max-w-5xl bg-white rounded-xl shadow-lg overflow-hidden">
 
@@ -96,6 +102,7 @@ function RecruiterRegister() {
 
       </div>
     </div>
+   </>
   );
 }
 

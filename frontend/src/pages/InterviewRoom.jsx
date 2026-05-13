@@ -1439,7 +1439,7 @@ const InterviewRoom = () => {
     /* capture face fingerprint before starting */
     const faceOk = await captureReferenceFace();
     if (!faceOk) {
-      alert("Could not register your face. Make sure your face is clearly visible and try again.");
+      toast.error("Could not register your face. Make sure your face is clearly visible and try again.");
       return;
     }
 
@@ -1465,7 +1465,7 @@ const InterviewRoom = () => {
       });
     } catch (err) {
       console.error(err);
-      alert("Failed to start interview");
+      toast.error("Failed to start interview");
     } finally {
       setLoading(false);
     }
@@ -1561,7 +1561,7 @@ const InterviewRoom = () => {
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to submit answer");
+      toast.error("Failed to submit answer");
     } finally {
       setLoading(false);
     }
@@ -1712,6 +1712,8 @@ const InterviewRoom = () => {
      MAIN INTERVIEW UI
   ════════════════════════════════════════ */
   return (
+    <>
+  
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 p-4 sm:p-6 min-h-[90vh]"
       style={{ background: "#0f1117" }}>
 
@@ -1944,6 +1946,7 @@ const InterviewRoom = () => {
         }
       `}</style>
     </div>
+    </>
   );
 };
 

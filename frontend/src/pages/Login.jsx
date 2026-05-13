@@ -7,7 +7,8 @@ import { z } from "zod";
 import axios from "axios";
 import { useAuth } from "../AuthContext";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const loginSchema = z.object({
   emailId: z.string().email("Please enter a valid email address"),
@@ -37,15 +38,28 @@ function Login() {
       //setUser(res.data.user);
       setIsAuthenticated(res.data.user);
 
-      console.log("Login successful");
-      navigate("/homepage");
+      toast.success("Login successfully! Redirecting...");
+      setTimeout(() => navigate("/homepage"), 2000);
+      
     } catch (error) {
       console.error("Login error:", error);
-      alert("Invalid credentials");
+       toast.error("Invalid credentials");
     }
   };
 
   return (
+
+    <>
+    <ToastContainer
+      position="top-right"
+      autoClose={2000}
+      hideProgressBar={false}
+      newestOnTop
+      closeOnClick
+      pauseOnHover
+      theme="colored"
+      toastStyle={{ borderRadius: '10px', fontSize: '14px' }}s
+    />
     <div className="min-h-screen flex items-center justify-center bg-black px-4 py-8">
       <div className="flex flex-col md:flex-row w-full max-w-3xl bg-white rounded-xl shadow-lg overflow-hidden">
 
@@ -123,6 +137,8 @@ function Login() {
         </div>
       </div>
     </div>
+    </>
+    
   );
 }
 

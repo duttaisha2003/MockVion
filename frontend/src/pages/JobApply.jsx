@@ -1,6 +1,8 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const JobApply = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -23,6 +25,10 @@ const JobApply = () => {
   } = data;
 
   return (
+    <>
+    <ToastContainer position="top-right" autoClose={2000}  hideProgressBar={false}  newestOnTop
+      closeOnClick  pauseOnHover  theme="colored"  toastStyle={{ borderRadius: '10px', fontSize: '14px' }}
+    />
     <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
       
       <div className="bg-gray-900 p-8 rounded-2xl w-full max-w-lg border border-gray-800">
@@ -78,7 +84,7 @@ const JobApply = () => {
                 : "bg-gray-600 cursor-not-allowed"
             }`}
             onClick={() =>
-              alert("Final Apply API call here 🚀")
+              toast.success("Final Apply API call here 🚀")
             }
           >
             Apply Now
@@ -87,6 +93,7 @@ const JobApply = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

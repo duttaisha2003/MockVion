@@ -1426,4 +1426,3 @@ const CheckRow = ({ label, status }) => {
 
 export default SubjectWiseInterviewRoom;
 
-
